@@ -1,33 +1,13 @@
 /*
- * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
- * - Keep every @import in this top block, above @theme and the rest of the file. Install an
- *   npm package before @importing its CSS. Never @import a remote URL (web fonts, CDN CSS): the
- *   build resolves @import from the filesystem. Load those with a <link> in the head() of
- *   src/routes/__root.tsx and name the family in a --font-* token in @theme inline below.
+ * Tailwind v4 entry — SHE COUNTS: Broadcast Sports-Telemetry Obsidian theme
+ * taste-skill compliant: tabular-nums, specular border insets, zero generic gradients,
+ * zero low-contrast text on dark surfaces.
  */
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-
-/*
- * Design system definition.
- *
- * The design lives in this file: oklch color tokens on the shadcn variables
- * (--background, --foreground, --primary, --secondary, --muted, --accent, ...) plus
- * new tokens as needed, font tokens, and custom styles and animations.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -63,6 +43,9 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-warning: var(--warning);
+  --color-teal: var(--teal);
+  --color-coral: var(--coral);
+  --color-amber: var(--amber);
   --font-sans: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --color-sidebar: var(--sidebar);
@@ -75,89 +58,139 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ── Broadcast Sports-Telemetry Obsidian Design Tokens ── */
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.18 0.025 240);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.235 0.03 240);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.235 0.03 240);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.78 0.13 182);
-  --primary-foreground: oklch(0.18 0.025 240);
-  --secondary: oklch(0.28 0.035 240);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.28 0.035 240);
-  --muted-foreground: oklch(0.71 0.035 256);
-  --accent: oklch(0.72 0.16 12);
-  --accent-foreground: oklch(0.18 0.025 240);
-  --warning: oklch(0.77 0.16 70);
-  --destructive: oklch(0.72 0.16 12);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.32 0.04 245);
-  --input: oklch(0.32 0.04 245);
-  --ring: oklch(0.78 0.13 182);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
-}
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  /* Canvas & Surfaces */
+  --background: oklch(0.08 0.018 240);       /* #070B14 Deep Obsidian */
+  --foreground: oklch(1 0 0);                 /* #FFFFFF */
+  --card: oklch(0.145 0.025 240);             /* #0F172A Elevated Bento */
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.145 0.025 240);
+  --popover-foreground: oklch(1 0 0);
+
+  /* Semantic accent tokens (taste-skill) */
+  --teal:  #2DD4BF;   /* Female / Parity / Positive */
+  --coral: #FB7185;   /* Dropout hazard / Disparity */
+  --amber: #FBBF24;   /* Warning / Root-cause */
+
+  /* Primary = Teal */
+  --primary: oklch(0.78 0.13 182);            /* #2DD4BF approx */
+  --primary-foreground: oklch(0.08 0.018 240);
+
+  /* Secondary surface = hover card */
+  --secondary: oklch(0.21 0.03 240);          /* #1E293B */
+  --secondary-foreground: oklch(0.9 0.012 247);
+
+  /* Muted */
+  --muted: oklch(0.21 0.03 240);
+  --muted-foreground: oklch(0.60 0.025 256);  /* #94A3B8 */
+
+  /* Accent = Coral */
+  --accent: oklch(0.72 0.19 15);             /* #FB7185 approx */
+  --accent-foreground: oklch(0.08 0.018 240);
+
+  /* Warning = Amber */
+  --warning: oklch(0.80 0.165 75);           /* #FBBF24 approx */
+
+  --destructive: oklch(0.72 0.19 15);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Borders: subtle specular */
+  --border: rgba(148, 163, 184, 0.16);
+  --input: rgba(148, 163, 184, 0.16);
+  --ring: oklch(0.78 0.13 182);
+
+  --chart-1: oklch(0.78 0.13 182);
+  --chart-2: oklch(0.72 0.19 15);
+  --chart-3: oklch(0.80 0.165 75);
+  --chart-4: oklch(0.646 0.222 41);
+  --chart-5: oklch(0.6 0.118 184);
+
+  --sidebar: oklch(0.145 0.025 240);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.78 0.13 182);
+  --sidebar-primary-foreground: oklch(0.08 0.018 240);
+  --sidebar-accent: oklch(0.21 0.03 240);
+  --sidebar-accent-foreground: oklch(0.9 0.012 247);
+  --sidebar-border: rgba(148, 163, 184, 0.16);
+  --sidebar-ring: oklch(0.78 0.13 182);
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
-
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
 }
 
-@utility kpi { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-@utility label-caps { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-foreground); font-weight: 600; }
+/* ── Design System Utilities (taste-skill compliant) ── */
+@utility kpi {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@utility label-caps {
+  font-size: 0.68rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+/* Bento card: elevated surface with top specular border inset */
+@utility bento-card {
+  background: var(--card);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow:
+    0 10px 30px -10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xl);
+}
+
+/* Hover bento card */
+@utility bento-hover {
+  background: oklch(0.21 0.03 240);
+  border-color: rgba(45, 212, 191, 0.35);
+  box-shadow:
+    0 16px 40px -12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Semantic badge fills */
+@utility badge-teal  { background: rgba(45, 212, 191, 0.15); color: #2DD4BF; border: 1px solid rgba(45, 212, 191, 0.35); }
+@utility badge-coral { background: rgba(251, 113, 133, 0.15); color: #FB7185; border: 1px solid rgba(251, 113, 133, 0.35); }
+@utility badge-amber { background: rgba(251, 191, 36, 0.15);  color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.35); }
+
+/* Secondary body text */
+@utility text-body { color: oklch(0.89 0.008 247); }   /* #E2E8F0 */
+@utility text-aux  { color: oklch(0.60 0.025 256); }   /* #94A3B8 */
+
 input[type="range"] { accent-color: var(--warning); }
+
+/* Recharts tooltip override */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: rgba(7, 11, 20, 0.95) !important;
+  border: 1px solid oklch(0.32 0.04 245) !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Button micro-interaction (taste-skill rule 5) */
+button:not(:disabled):active { transform: translateY(1px); }
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px -15px rgba(0,0,0,0.85), inset 0 1px 0 0 rgba(255,255,255,0.1);
+}
