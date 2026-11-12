@@ -29,9 +29,12 @@ export const Route = createFileRoute("/")({
 });
 
 // ── Design tokens — exact hex specification per brief
-const TEAL  = "#2DD4BF";   // A. Electric Cyan — Female Active & Parity
+const TEAL  = "#2DD4BF";   // A. Electric Cyan / Teal — Female Active & Parity
 const CORAL = "#FB7185";   // B. Sunset Coral  — Male Baseline, Disparity & Dropout Hazard
 const AMBER = "#F59E0B";   // C. Warm Amber    — Dropout Cliff & Optimizer Projection
+const AMBER_BRIGHT = "#FBBF24"; // Warm Amber (KPI 2 & Interventions)
+const SKY   = "#38BDF8";   // Electric Sky Blue (KPI 3 & Prime Rotation)
+const VIOLET = "#A78BFA";  // Vibrant Violet (KPI 4 & Female Mentors)
 
 // X-axis cohort labels: bold white (#F8FAFC); Y-axis percentages: muted (#94A3B8)
 const CHART_TICK_X = { fill: "#F8FAFC", fontSize: 12, fontWeight: 600 } as const;
@@ -223,11 +226,21 @@ function Modal({ open, onClose, title, wide, children }: {
 }
 
 // ── Badge
-function Badge({ color, children }: { color: "teal" | "coral" | "amber"; children: ReactNode }) {
-  const styles = {
-    teal:  { background: "rgba(45,212,191,0.15)",  color: TEAL,  border: "1px solid rgba(45,212,191,0.35)" },
-    coral: { background: "rgba(251,113,133,0.15)", color: CORAL, border: "1px solid rgba(251,113,133,0.35)" },
-    amber: { background: "rgba(245,158,11,0.15)",  color: AMBER, border: "1px solid rgba(245,158,11,0.35)" },
+function Badge({
+  color = "teal",
+  children,
+  customStyle,
+}: {
+  color?: "teal" | "coral" | "amber" | "sky" | "violet" | undefined;
+  children: ReactNode;
+  customStyle?: { background: string; color: string; border: string } | undefined;
+}) {
+  const styles = customStyle ?? {
+    teal:   { background: "rgba(45,212,191,0.15)",  color: TEAL,         border: "1px solid rgba(45,212,191,0.35)" },
+    coral:  { background: "rgba(251,113,133,0.15)", color: CORAL,        border: "1px solid rgba(251,113,133,0.35)" },
+    amber:  { background: "rgba(251,191,36,0.15)",  color: AMBER_BRIGHT, border: "1px solid rgba(251,191,36,0.35)" },
+    sky:    { background: "rgba(56,189,248,0.15)",  color: SKY,          border: "1px solid rgba(56,189,248,0.35)" },
+    violet: { background: "rgba(167,139,250,0.15)", color: VIOLET,       border: "1px solid rgba(167,139,250,0.35)" },
   }[color];
   return (
     <span className="kpi inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" style={styles}>
@@ -238,10 +251,12 @@ function Badge({ color, children }: { color: "teal" | "coral" | "amber"; childre
 
 // ── KPI ribbon card
 function KpiCard({
-  title, main, mainColor = "#F8FAFC", sub, badge, badgeColor = "teal", accentColor, bottom,
+  title, main, mainColor = "#F8FAFC", sub, badge, badgeColor = "teal", customBadgeStyle, accentColor, bottom,
 }: {
-  title: string; main: string; mainColor?: string; sub: string;
-  badge?: string; badgeColor?: "teal" | "coral" | "amber"; accentColor?: string; bottom?: ReactNode;
+  title: string; main: string; mainColor?: string | undefined; sub: string;
+  badge?: string | undefined; badgeColor?: "teal" | "coral" | "amber" | "sky" | "violet" | undefined;
+  customBadgeStyle?: { background: string; color: string; border: string } | undefined;
+  accentColor?: string | undefined; bottom?: ReactNode | undefined;
 }) {
   return (
     <div
@@ -249,8 +264,10 @@ function KpiCard({
       style={{
         background: "#13222F",
         border: "1px solid",
-        borderColor: accentColor ? `${accentColor}66` : "#1E3243",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+        borderColor: accentColor ? `${accentColor}80` : "#1E3243",
+        boxShadow: accentColor
+          ? `0 8px 30px rgba(0,0,0,0.45), 0 0 16px ${accentColor}25, inset 0 1px 0 0 rgba(255,255,255,0.07)`
+          : "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
       }}
     >
       <span className="label-caps text-[#94A3B8]">{title}</span>
@@ -258,7 +275,7 @@ function KpiCard({
         {main}
       </span>
       <span className="text-xs text-[#94A3B8]">{sub}</span>
-      {badge && <Badge color={badgeColor}>{badge}</Badge>}
+      {badge && <Badge color={badgeColor} customStyle={customBadgeStyle}>{badge}</Badge>}
       {bottom}
     </div>
   );
@@ -851,51 +868,79 @@ function Dashboard() {
 
             {/* 4-Pill Grid */}
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Pill 1 */}
-              <div className="rounded-lg p-3 bg-[#0B151E]/90 border border-[#2DD4BF]/30 flex flex-col justify-between">
+              {/* Pill 1: Sky #38BDF8 */}
+              <div
+                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                style={{
+                  border: "1px solid #1E3243",
+                  borderTop: `2px solid ${SKY}`,
+                  borderLeft: `2px solid ${SKY}`,
+                }}
+              >
                 <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#2DD4BF]">
+                  <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: SKY }}>
                     <span>1. 50/50 Prime-Hour Rotation</span>
-                    <span className="px-1.5 py-0.5 rounded bg-[#2DD4BF]/15 text-[10px] border border-[#2DD4BF]/30 font-mono">€0 Cost</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(56,189,248,0.15)", border: "1px solid rgba(56,189,248,0.35)", color: SKY }}>€0 Cost</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">18:00–20:00 Equal Pitch Allocation</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 37–40% Eurobarometer time/schedule barrier ($0 cost).</p>
+                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 37–40% Eurobarometer time/schedule barrier (€0 cost).</p>
                 </div>
               </div>
 
-              {/* Pill 2 */}
-              <div className="rounded-lg p-3 bg-[#0B151E]/90 border border-[#2DD4BF]/30 flex flex-col justify-between">
+              {/* Pill 2: Rose #FB7185 */}
+              <div
+                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                style={{
+                  border: "1px solid #1E3243",
+                  borderTop: `2px solid ${CORAL}`,
+                  borderLeft: `2px solid ${CORAL}`,
+                }}
+              >
                 <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#2DD4BF]">
+                  <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: CORAL }}>
                     <span>2. Dark Shorts &amp; Washroom Packs</span>
-                    <span className="px-1.5 py-0.5 rounded bg-[#2DD4BF]/15 text-[10px] border border-[#2DD4BF]/30 font-mono">Near-€0</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(251,113,133,0.15)", border: "1px solid rgba(251,113,133,0.35)", color: CORAL }}>Near-€0</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">Dark Shorts Policy &amp; Period Supplies</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 78% Women in Sport period/leakage avoidance (Near-$0 cost).</p>
+                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 78% Women in Sport period/leakage avoidance (Near-€0 cost).</p>
                 </div>
               </div>
 
-              {/* Pill 3 */}
-              <div className="rounded-lg p-3 bg-[#0B151E]/90 border border-[#2DD4BF]/30 flex flex-col justify-between">
+              {/* Pill 3: Violet #A78BFA */}
+              <div
+                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                style={{
+                  border: "1px solid #1E3243",
+                  borderTop: `2px solid ${VIOLET}`,
+                  borderLeft: `2px solid ${VIOLET}`,
+                }}
+              >
                 <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#2DD4BF]">
+                  <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: VIOLET }}>
                     <span>3. Senior Female Athlete Mentors</span>
-                    <span className="px-1.5 py-0.5 rounded bg-[#2DD4BF]/15 text-[10px] border border-[#2DD4BF]/30 font-mono">Low Cost</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.35)", color: VIOLET }}>Low Cost</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">Senior Athlete Assistant Mentors</p>
                   <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 63% lack of female role models (Low cost).</p>
                 </div>
               </div>
 
-              {/* Pill 4 */}
-              <div className="rounded-lg p-3 bg-[#0B151E]/90 border border-[#2DD4BF]/30 flex flex-col justify-between">
+              {/* Pill 4: Amber #FBBF24 */}
+              <div
+                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                style={{
+                  border: "1px solid #1E3243",
+                  borderTop: `2px solid ${AMBER_BRIGHT}`,
+                  borderLeft: `2px solid ${AMBER_BRIGHT}`,
+                }}
+              >
                 <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#2DD4BF]">
+                  <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: AMBER_BRIGHT }}>
                     <span>4. 10-Min Injury Warmup Protocol</span>
-                    <span className="px-1.5 py-0.5 rounded bg-[#2DD4BF]/15 text-[10px] border border-[#2DD4BF]/30 font-mono">€0 Cost</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.35)", color: AMBER_BRIGHT }}>€0 Cost</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">ACL &amp; Joint Prevention Routine</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 15% Eurobarometer health/injury barrier ($0 cost).</p>
+                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 15% Eurobarometer health/injury barrier (€0 cost).</p>
                 </div>
               </div>
             </div>
@@ -919,7 +964,7 @@ function Dashboard() {
             title="Female Active Share"
             main={isAfterMode ? `${sim.projectedShare}%` : `${k.femaleActiveShare}%`}
             mainColor={TEAL}
-            accentColor={TEAL}
+            accentColor={isAfterMode ? TEAL : undefined}
             sub={
               isAfterMode
                 ? `${sim.currentActive} → ${sim.projectedActive} active players (+${sim.retained} newly engaged)`
@@ -944,8 +989,8 @@ function Dashboard() {
           <KpiCard
             title="Adolescent Dropout Cliff (U14→U18)"
             main={isAfterMode ? `${sim.projected}%` : `${k.dropoutCliff}%`}
-            mainColor={isAfterMode ? TEAL : AMBER}
-            accentColor={isAfterMode ? "teal" : "amber"}
+            mainColor={isAfterMode ? AMBER_BRIGHT : AMBER}
+            accentColor={isAfterMode ? AMBER_BRIGHT : "amber"}
             sub={
               isAfterMode
                 ? `Hazard drops from ${k.dropoutCliff}% to ${sim.projected}% (−${sim.hazardDrop} pp reduction)`
@@ -956,13 +1001,13 @@ function Dashboard() {
                 ? `−${sim.hazardDrop} pp Hazard Drop`
                 : "ICOACHKIDS+ 52% teen dropout window"
             }
-            badgeColor={isAfterMode ? "teal" : "amber"}
+            badgeColor="amber"
           />
           <KpiCard
             title="Prime-Time Pitch Share (18:00–21:00)"
             main={isAfterMode ? `${postPrimeSlot}%` : `${k.primeSlotAvg}%`}
-            mainColor={TEAL}
-            accentColor={TEAL}
+            mainColor={isAfterMode ? SKY : TEAL}
+            accentColor={isAfterMode ? SKY : "teal"}
             sub={
               isAfterMode
                 ? "50/50 evening allocation active (18:00–20:00 priority for girls' squads)"
@@ -975,247 +1020,342 @@ function Dashboard() {
                   ? `${((100 - k.primeSlotAvg) / Math.max(1, k.primeSlotAvg)).toFixed(1)}x Male Skew`
                   : "Near Parity")
             }
-            badgeColor={isAfterMode ? "teal" : (k.primeSlotAvg < 40 ? "coral" : "teal")}
+            badgeColor={isAfterMode ? "sky" : (k.primeSlotAvg < 40 ? "coral" : "teal")}
           />
           <KpiCard
             title="Female Coaching & Kit Score"
             main={isAfterMode ? `${postComposite}%` : `${k.femaleCoachAvg}%`}
-            mainColor={isAfterMode ? TEAL : CORAL}
-            accentColor={isAfterMode ? "teal" : "coral"}
+            mainColor={isAfterMode ? VIOLET : (k.pubertySupportAvg < 50 ? CORAL : TEAL)}
+            accentColor={isAfterMode ? VIOLET : (k.pubertySupportAvg < 50 ? "coral" : "teal")}
             sub={
               isAfterMode
                 ? `${baseComposite}% → ${postComposite}% (45% female coaches, 100% dark kit & period packs)`
                 : `Female coaching ${k.femaleCoachAvg}%. Puberty Support Score: ${k.pubertySupportAvg}/100`
             }
             badge={isAfterMode ? `Kit & Coaching Parity (${postComposite}%)` : (k.pubertySupportAvg < 50 ? "Kit & Mentorship Gap" : "On Track")}
-            badgeColor={isAfterMode ? "teal" : (k.pubertySupportAvg < 50 ? "coral" : "teal")}
+            badgeColor={isAfterMode ? "violet" : (k.pubertySupportAvg < 50 ? "coral" : "teal")}
           />
         </div>
 
         {/* ── 3-Column Bento Grid ── */}
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 items-start">
 
-          {/* Left Column */}
-          <div className="space-y-5 lg:col-span-3">
-            <Card title="Weekly Prime-Slot Share" accent="teal">
-              <Donut
-                data={[
-                  { v: isAfterMode ? sim.projectedShare : k.femaleActiveShare, c: TEAL, glow: true },
-                  { v: isAfterMode ? +(100 - sim.projectedShare).toFixed(1) : k.maleActiveShare, c: CORAL },
-                ]}
-                center={
-                  <>
-                    <span className="kpi text-3xl font-extrabold text-[#F8FAFC]">
-                      {isAfterMode ? `${sim.projectedShare}%` : `${k.femaleActiveShare}%`}
-                    </span>
-                    <span className="text-xs font-semibold text-[#94A3B8]">
-                      {isAfterMode ? "Female (Target)" : "Female"}
-                    </span>
-                  </>
-                }
-              />
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <Badge color="teal">{isAfterMode ? "50/50 Parity Reached" : "Target: 50/50"}</Badge>
-                <span className="text-[#94A3B8]">Prime slots 18:00–21:00</span>
-              </div>
-            </Card>
+          {/* Left + Centre Combined Container (spans 9 of 12 cols = 2 cols of 3-col split) */}
+          <div className="space-y-5 lg:col-span-9">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-9">
 
-            <Card title="Teen Retention Hazard (U14–U18)" accent={isAfterMode ? "teal" : "coral"}>
-              <Donut
-                data={[
-                  { v: isAfterMode ? sim.projected : k.dropoutCliff, c: isAfterMode ? TEAL : CORAL },
-                  { v: isAfterMode ? +(100 - sim.projected).toFixed(1) : 100 - k.dropoutCliff, c: "#1E3243" },
-                ]}
-                center={
-                  <>
-                    <span className="kpi text-3xl font-extrabold text-[#F8FAFC]">
-                      {isAfterMode ? `${sim.projected}%` : `${k.dropoutCliff}%`}
-                    </span>
-                    <span className="text-xs font-semibold" style={{ color: isAfterMode ? TEAL : CORAL }}>
-                      {isAfterMode ? "Projected Hazard" : "Dropout Risk"}
-                    </span>
-                  </>
-                }
-              />
-              <div className="mt-2">
-                <Badge color={isAfterMode ? "teal" : "coral"}>
-                  {isAfterMode ? `−${sim.hazardDrop} pp Hazard Reduction` : "⚠ Hazard cohort: Ages 14–18"}
-                </Badge>
-                <p className="mt-2 text-xs text-[#94A3B8]">
-                  ICOACHKIDS+: 52% of all EU youth sport dropouts occur at ages 14–18. 70% of dropped-out girls still consider themselves "sporty."
-                </p>
-              </div>
-            </Card>
-          </div>
-
-          {/* Centre Column */}
-          <div className="space-y-5 lg:col-span-6">
-            <Card title="Active Retention Curve — Female vs. Male by Cohort" accent="teal">
-              <div className="relative h-64">
-                <RunnerWatermark />
-                <ResponsiveContainer className="relative z-10">
-                  <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="femaleGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={TEAL} stopOpacity={0.38} />
-                        <stop offset="100%" stopColor={TEAL} stopOpacity={0.02} />
-                      </linearGradient>
-                      <linearGradient id="maleGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={CORAL} stopOpacity={0.28} />
-                        <stop offset="100%" stopColor={CORAL} stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid {...CHART_GRID} vertical={false} />
-                    <XAxis dataKey="age" tick={CHART_TICK_X} axisLine={false} tickLine={false} />
-                    <YAxis unit="%" domain={[0, 100]} tick={CHART_TICK_Y} axisLine={false} tickLine={false} />
-                    <Tooltip {...TIP_STYLE} />
-                    <Legend
-                      wrapperStyle={{ color: "#94A3B8", fontSize: 11 }}
-                      formatter={(value) => {
-                        if (value === "Female Active (%)") {
-                          return <span style={{ color: "#F8FAFC" }}>Female Active (%)</span>;
-                        }
-                        if (value === "Before: Baseline Female (%)") {
-                          return <span style={{ color: "#94A3B8", fontStyle: "italic" }}>Before: Baseline Female (%) [Dashed]</span>;
-                        }
-                        if (value === "After: 90-Day Interventions (%)") {
-                          return (
-                            <span style={{ color: TEAL, fontWeight: 700 }}>
-                              ✨ After: 90-Day Interventions (%) [Solid Parity Lift]
-                            </span>
-                          );
-                        }
-                        if (value === "Projected Post-Intervention (%)") {
-                          return (
-                            <span style={{ color: TEAL, fontWeight: 700 }}>
-                              ✨ Projected Post-Intervention (%) [Dashed]
-                            </span>
-                          );
-                        }
-                        return <span style={{ color: "#94A3B8" }}>Male Active (%)</span>;
-                      }}
-                    />
-                    <ReferenceLine
-                      x="U14"
-                      stroke={AMBER}
-                      strokeDasharray="4 2"
-                      label={{ value: "Puberty & Schedule Cliff", fill: AMBER, fontSize: 10, position: "insideTopRight" }}
-                    />
-                    {isAfterMode ? (
+              {/* Left Sub-Column (3 of 9 cols) */}
+              <div className="space-y-5 lg:col-span-3">
+                <Card title="Weekly Prime-Slot Share" accent="teal">
+                  <Donut
+                    data={[
+                      { v: isAfterMode ? sim.projectedShare : k.femaleActiveShare, c: TEAL, glow: true },
+                      { v: isAfterMode ? +(100 - sim.projectedShare).toFixed(1) : k.maleActiveShare, c: CORAL },
+                    ]}
+                    center={
                       <>
-                        <Area
-                          type="linear"
-                          dataKey="female"
-                          name="Before: Baseline Female (%)"
-                          stroke="#94A3B8"
-                          fill="none"
-                          strokeWidth={2}
-                          strokeDasharray="4 4"
-                          opacity={0.45}
-                        />
-                        <Area
-                          type="linear"
-                          dataKey="projectedFemale"
-                          name="After: 90-Day Interventions (%)"
-                          stroke={TEAL}
-                          fill="url(#femaleGradient)"
-                          strokeWidth={3.5}
-                          dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 2 }}
-                        />
+                        <span className="kpi text-3xl font-extrabold text-[#F8FAFC]">
+                          {isAfterMode ? `${sim.projectedShare}%` : `${k.femaleActiveShare}%`}
+                        </span>
+                        <span className="text-xs font-semibold text-[#94A3B8]">
+                          {isAfterMode ? "Female (Target)" : "Female"}
+                        </span>
                       </>
-                    ) : (
-                      <>
-                        <Area
-                          type="linear"
-                          dataKey="female"
-                          name="Female Active (%)"
-                          stroke={TEAL}
-                          fill="url(#femaleGradient)"
-                          strokeWidth={3}
-                          dot={{ fill: TEAL, r: 3 }}
-                        />
-                        {(s1 > 0 || s2 > 0 || s3 > 0) && (
-                          <Area
-                            type="linear"
-                            dataKey="projectedFemale"
-                            name="Projected Post-Intervention (%)"
-                            stroke={TEAL}
-                            fill="none"
-                            strokeWidth={2.5}
-                            strokeDasharray="6 4"
-                            dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 1.5 }}
-                          />
-                        )}
-                      </>
-                    )}
-                    <Area
-                      type="linear"
-                      dataKey="male"
-                      name="Male Active (%)"
-                      stroke={CORAL}
-                      fill="url(#maleGradient)"
-                      strokeWidth={2.5}
-                      dot={{ fill: CORAL, r: 3 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
+                    }
+                  />
+                  <div className="mt-2 flex items-center justify-between text-xs">
+                    <Badge color="teal">{isAfterMode ? "50/50 Parity Reached" : "Target: 50/50"}</Badge>
+                    <span className="text-[#94A3B8]">Prime slots 18:00–21:00</span>
+                  </div>
+                </Card>
 
-            <Card title="Age Cohort Comparison Matrix">
-              <div className="overflow-x-auto">
-                <table className="kpi w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="text-left text-[#94A3B8]">
-                      <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Cohort</th>
-                      <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Female Active</th>
-                      <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Male Active</th>
-                      <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Retention Gap</th>
-                      <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Prime Slot Share</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {k.ages.map((a, idx) => {
-                      const proj = sim.projectedAges?.[idx]?.projectedFemale ?? a.female;
-                      const gain = +(proj - a.female).toFixed(0);
-                      const postGap = Math.max(0, a.male - proj);
-                      return (
-                        <tr key={a.age} className="transition-colors hover:bg-white/5">
-                          <td className="border p-2 font-semibold text-[#F8FAFC]" style={{ borderColor: "#1E3243" }}>{a.age}</td>
-                          <td className="border p-2 font-bold" style={{ borderColor: "#1E3243", color: TEAL }}>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span>{isAfterMode ? `${proj}%` : `${a.female}%`}</span>
-                              {isAfterMode && gain > 0 && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40">
-                                  +{gain} pp
+                <Card title="Teen Retention Hazard (U14–U18)" accent={isAfterMode ? "teal" : "coral"}>
+                  <Donut
+                    data={[
+                      { v: isAfterMode ? sim.projected : k.dropoutCliff, c: isAfterMode ? TEAL : CORAL },
+                      { v: isAfterMode ? +(100 - sim.projected).toFixed(1) : 100 - k.dropoutCliff, c: "#1E3243" },
+                    ]}
+                    center={
+                      <>
+                        <span className="kpi text-3xl font-extrabold text-[#F8FAFC]">
+                          {isAfterMode ? `${sim.projected}%` : `${k.dropoutCliff}%`}
+                        </span>
+                        <span className="text-xs font-semibold" style={{ color: isAfterMode ? TEAL : CORAL }}>
+                          {isAfterMode ? "Projected Hazard" : "Dropout Risk"}
+                        </span>
+                      </>
+                    }
+                  />
+                  <div className="mt-2">
+                    <Badge color={isAfterMode ? "teal" : "coral"}>
+                      {isAfterMode ? `−${sim.hazardDrop} pp Hazard Reduction` : "⚠ Hazard cohort: Ages 14–18"}
+                    </Badge>
+                    <p className="mt-2 text-xs text-[#94A3B8]">
+                      ICOACHKIDS+: 52% of all EU youth sport dropouts occur at ages 14–18. 70% of dropped-out girls still consider themselves "sporty."
+                    </p>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Centre Sub-Column (6 of 9 cols) */}
+              <div className="space-y-5 lg:col-span-6">
+                <Card title="Active Retention Curve — Female vs. Male by Cohort" accent="teal">
+                  <div className="relative h-64">
+                    <RunnerWatermark />
+                    <ResponsiveContainer className="relative z-10">
+                      <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="femaleGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={TEAL} stopOpacity={0.38} />
+                            <stop offset="100%" stopColor={TEAL} stopOpacity={0.02} />
+                          </linearGradient>
+                          <linearGradient id="maleGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={CORAL} stopOpacity={0.28} />
+                            <stop offset="100%" stopColor={CORAL} stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid {...CHART_GRID} vertical={false} />
+                        <XAxis dataKey="age" tick={CHART_TICK_X} axisLine={false} tickLine={false} />
+                        <YAxis unit="%" domain={[0, 100]} tick={CHART_TICK_Y} axisLine={false} tickLine={false} />
+                        <Tooltip {...TIP_STYLE} />
+                        <Legend
+                          wrapperStyle={{ color: "#94A3B8", fontSize: 11 }}
+                          formatter={(value) => {
+                            if (value === "Female Active — Post-Intervention (%)") {
+                              return (
+                                <span style={{ color: TEAL, fontWeight: 700 }}>
+                                  ✨ Female Active — Post-Intervention (%) [Solid Parity Lift]
                                 </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="border p-2" style={{ borderColor: "#1E3243", color: CORAL }}>{a.male}%</td>
-                          <td className="border p-2 font-semibold" style={{ borderColor: "#1E3243", color: (isAfterMode ? postGap : a.gap) > 15 ? CORAL : (isAfterMode ? postGap : a.gap) > 5 ? AMBER : TEAL }}>
-                            {isAfterMode ? (
-                              <div className="flex items-center gap-1">
-                                <span>{postGap > 0 ? "−" : ""}{postGap} pp</span>
-                                {gain > 0 && <span className="text-[10px] text-[#2DD4BF] font-mono">({a.gap} → {postGap})</span>}
-                              </div>
-                            ) : (
-                              <span>{a.gap > 0 ? "−" : ""}{a.gap} pp</span>
+                              );
+                            }
+                            if (value === "Female Baseline (%)" || value === "Before: Baseline Female (%)") {
+                              return <span style={{ color: "#94A3B8", fontStyle: "italic" }}>Female Baseline (%) [Dashed]</span>;
+                            }
+                            if (value === "Female Active (%)") {
+                              return <span style={{ color: TEAL, fontWeight: 600 }}>Female Active (%)</span>;
+                            }
+                            return <span style={{ color: CORAL, fontWeight: 600 }}>Male Active (%)</span>;
+                          }}
+                        />
+                        <ReferenceLine
+                          x="U14"
+                          stroke={AMBER}
+                          strokeDasharray="4 2"
+                          label={{ value: "Puberty & Schedule Cliff", fill: AMBER, fontSize: 10, position: "insideTopRight" }}
+                        />
+                        {isAfterMode ? (
+                          <>
+                            {/* Faint dashed line for Female Baseline (%) */}
+                            <Area
+                              type="linear"
+                              dataKey="female"
+                              name="Female Baseline (%)"
+                              stroke="#94A3B8"
+                              fill="none"
+                              strokeWidth={2}
+                              strokeDasharray="4 4"
+                              opacity={0.5}
+                            />
+                            {/* Bright #2DD4BF solid line for Female Active — Post-Intervention (%) */}
+                            <Area
+                              type="linear"
+                              dataKey="projectedFemale"
+                              name="Female Active — Post-Intervention (%)"
+                              stroke={TEAL}
+                              fill="url(#femaleGradient)"
+                              strokeWidth={3}
+                              dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 2 }}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Area
+                              type="linear"
+                              dataKey="female"
+                              name="Female Active (%)"
+                              stroke={TEAL}
+                              fill="url(#femaleGradient)"
+                              strokeWidth={3}
+                              dot={{ fill: TEAL, r: 3 }}
+                            />
+                            {(s1 > 0 || s2 > 0 || s3 > 0) && (
+                              <Area
+                                type="linear"
+                                dataKey="projectedFemale"
+                                name="Female Active — Post-Intervention (%)"
+                                stroke={TEAL}
+                                fill="none"
+                                strokeWidth={2.5}
+                                strokeDasharray="6 4"
+                                dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 1.5 }}
+                              />
                             )}
-                          </td>
-                          <td className="border p-2" style={{ borderColor: "#1E3243", color: a.primeSlotPct < 40 ? CORAL : "#F8FAFC" }}>
-                            {isAfterMode && s1 >= 50 ? "50%" : `${a.primeSlotPct}%`}
-                          </td>
+                          </>
+                        )}
+                        <Area
+                          type="linear"
+                          dataKey="male"
+                          name="Male Active (%)"
+                          stroke={CORAL}
+                          fill="url(#maleGradient)"
+                          strokeWidth={2.5}
+                          dot={{ fill: CORAL, r: 3 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card title="Age Cohort Comparison Matrix">
+                  <div className="overflow-x-auto">
+                    <table className="kpi w-full border-collapse text-sm">
+                      <thead>
+                        <tr className="text-left text-[#94A3B8]">
+                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Cohort</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Female Active</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Male Active</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Retention Gap</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Prime Slot Share</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {k.ages.map((a, idx) => {
+                          const proj = sim.projectedAges?.[idx]?.projectedFemale ?? a.female;
+                          const fProj = Number(proj.toFixed(1));
+                          const fFemale = Number(a.female.toFixed(1));
+                          const fMale = Number(a.male.toFixed(1));
+                          const fGain = Number((proj - a.female).toFixed(1));
+                          const fBaseGap = Number(a.gap.toFixed(1));
+                          const rawPostGap = a.male - proj;
+                          const fPostGap = Number(Math.max(0, rawPostGap).toFixed(1));
+                          const fPrime = Number(a.primeSlotPct.toFixed(1));
+                          const displayGap = isAfterMode ? fPostGap : fBaseGap;
+
+                          return (
+                            <tr key={a.age} className="transition-colors hover:bg-white/5">
+                              <td className="border p-2 font-semibold text-[#F8FAFC]" style={{ borderColor: "#1E3243" }}>{a.age}</td>
+                              <td className="border p-2 font-bold" style={{ borderColor: "#1E3243", color: TEAL }}>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span>{isAfterMode ? `${fProj}%` : `${fFemale}%`}</span>
+                                  {isAfterMode && fGain > 0 && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40">
+                                      +{fGain} pp
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="border p-2" style={{ borderColor: "#1E3243", color: CORAL }}>{fMale}%</td>
+                              <td className="border p-2 font-semibold" style={{ borderColor: "#1E3243", color: displayGap > 15 ? CORAL : displayGap > 5 ? AMBER : TEAL }}>
+                                {isAfterMode ? (
+                                  <div className="flex items-center gap-1">
+                                    <span>{fPostGap > 0 ? "−" : ""}{fPostGap} pp</span>
+                                    {fGain > 0 && (
+                                      <span className="text-[10px] text-[#2DD4BF] font-mono">
+                                        ({fBaseGap > 0 ? "−" : ""}{fBaseGap} → {fPostGap > 0 ? "−" : ""}{fPostGap})
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span>{fBaseGap > 0 ? "−" : ""}{fBaseGap} pp</span>
+                                )}
+                              </td>
+                              <td className="border p-2" style={{ borderColor: "#1E3243", color: fPrime < 40 ? CORAL : "#F8FAFC" }}>
+                                {isAfterMode && s1 >= 50 ? "50%" : `${fPrime}%`}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
               </div>
-            </Card>
+            </div>
+
+            {/* ── Expected Post-Intervention Impact Readout Bar (Aligned flush below Left & Centre Cards) ── */}
+            <div
+              className="rounded-xl p-4 space-y-3"
+              style={{
+                background: "#13222F",
+                border: "1px solid rgba(45,212,191,0.35)",
+                boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+              }}
+            >
+              <div className="flex items-center justify-between border-b border-[#1E3243] pb-2.5">
+                <div className="flex items-center gap-2 font-bold text-xs text-[#F8FAFC]">
+                  <span className="text-[#2DD4BF]">📈</span>
+                  <span className="tracking-wide uppercase">EXPECTED POST-INTERVENTION IMPACT (PARITY PROJECTION)</span>
+                </div>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    sim.retained > 0
+                      ? "bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40"
+                      : "bg-[#1E3243] text-[#94A3B8]"
+                  }`}
+                >
+                  {sim.retained > 0 ? `+${sim.retained} Retained Girls` : "Baseline (No Levers)"}
+                </span>
+              </div>
+
+              {/* 3-Metric Growth Grid */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {/* Metric 1: Female Participation Growth */}
+                <div
+                  className="rounded-lg p-3"
+                  style={{ background: "#0B151E", border: "1px solid rgba(45,212,191,0.3)" }}
+                >
+                  <span className="text-[11px] font-semibold text-[#94A3B8] block">Female Participation Growth</span>
+                  <div className="kpi mt-1 text-lg font-extrabold tabular-nums" style={{ color: TEAL }}>
+                    {sim.shareGain > 0 ? `+${Number(sim.shareGain.toFixed(1))}%` : "+0.0%"}
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-[#94A3B8]">
+                    {Number(sim.currentShare.toFixed(1))}% → {Number(sim.projectedShare.toFixed(1))}% Female Active Share
+                  </p>
+                </div>
+
+                {/* Metric 2: Projected Active Female Athletes */}
+                <div
+                  className="rounded-lg p-3"
+                  style={{ background: "#0B151E", border: "1px solid #1E3243" }}
+                >
+                  <span className="text-[11px] font-semibold text-[#94A3B8] block">Projected Active Female Athletes</span>
+                  <div className="kpi mt-1 text-lg font-extrabold text-[#F8FAFC] tabular-nums">
+                    {sim.projectedActive}
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-[#94A3B8]">
+                    {sim.currentActive} → {sim.projectedActive} (+{sim.retained} retained &amp; newly engaged girls)
+                  </p>
+                </div>
+
+                {/* Metric 3: Teen Dropout Hazard Drop */}
+                <div
+                  className="rounded-lg p-3"
+                  style={{
+                    background: "#0B151E",
+                    border: sim.hazardDrop > 0 ? "1px solid rgba(251,191,36,0.35)" : "1px solid #1E3243",
+                  }}
+                >
+                  <span className="text-[11px] font-semibold text-[#94A3B8] block">Teen Dropout Hazard Drop</span>
+                  <div
+                    className="kpi mt-1 text-lg font-extrabold tabular-nums"
+                    style={{ color: sim.hazardDrop > 0 ? AMBER_BRIGHT : "#94A3B8" }}
+                  >
+                    {sim.hazardDrop > 0 ? `−${Number(sim.hazardDrop.toFixed(1))} pp` : "0.0 pp"}
+                  </div>
+                  <p className="mt-0.5 text-[11px] text-[#94A3B8]">
+                    {Number(k.dropoutCliff.toFixed(1))}% → {Number(sim.projected.toFixed(1))}% ({sim.hazardDrop > 0 ? `-${Number(sim.hazardDrop.toFixed(1))} pp reduction` : "Baseline hazard"})
+                  </p>
+                </div>
+              </div>
+
+              {/* Transparent methodology disclaimer */}
+              <p className="text-[10px] italic text-[#94A3B8] leading-tight pt-1">
+                Hypothetical Policy Elasticity Model — weighted against Eurobarometer 574 (37% time), Women in Sport (78% period/kit), and PMC12330288 (63% female role-model) barrier elasticities.
+              </p>
+            </div>
           </div>
 
-          {/* Right Column */}
+          {/* Right Column (spans 3 of 12 cols = 1 col of 3-col split) */}
           <div className="space-y-5 lg:col-span-3">
             <Card title="Prime-Hour Disparity (18:00–21:00)" accent="coral">
               <div className="h-44">
@@ -1314,85 +1454,9 @@ function Dashboard() {
                   accentColor={TEAL}
                 />
 
-                <div
-                  className="rounded-lg p-3.5 space-y-3"
-                  style={{
-                    background: "rgba(11,21,30,0.85)",
-                    border: "1px solid rgba(45,212,191,0.35)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.35)",
-                  }}
-                >
-                  <div className="flex items-center justify-between border-b border-[#1E3243] pb-2">
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-[#F8FAFC]">
-                      <span className="text-[#2DD4BF]">📈</span>
-                      <span>EXPECTED POST-INTERVENTION IMPACT</span>
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                        sim.retained > 0
-                          ? "bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40"
-                          : "bg-[#1E3243] text-[#94A3B8]"
-                      }`}
-                    >
-                      {sim.retained > 0 ? `+${sim.retained} Retained` : "Baseline (No Levers)"}
-                    </span>
-                  </div>
-
-                  {/* 3-Metric Growth Grid */}
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                    {/* Metric 1: Female Participation Growth */}
-                    <div
-                      className="rounded-md p-2.5"
-                      style={{ background: "#13222F", border: "1px solid rgba(45,212,191,0.25)" }}
-                    >
-                      <span className="text-[10px] font-semibold text-[#94A3B8] block">Female Participation Growth</span>
-                      <div className="kpi mt-1 text-base font-extrabold tabular-nums" style={{ color: TEAL }}>
-                        {sim.shareGain > 0 ? `+${sim.shareGain.toFixed(1)}%` : "+0.0%"}
-                      </div>
-                      <p className="mt-0.5 text-[10px] text-[#94A3B8]">
-                        {sim.currentShare.toFixed(1)}% → {sim.projectedShare.toFixed(1)}% Female Active Share
-                      </p>
-                    </div>
-
-                    {/* Metric 2: Projected Active Female Athletes */}
-                    <div
-                      className="rounded-md p-2.5"
-                      style={{ background: "#13222F", border: "1px solid #1E3243" }}
-                    >
-                      <span className="text-[10px] font-semibold text-[#94A3B8] block">Projected Active Female Athletes</span>
-                      <div className="kpi mt-1 text-base font-extrabold text-[#F8FAFC] tabular-nums">
-                        {sim.projectedActive}
-                      </div>
-                      <p className="mt-0.5 text-[10px] text-[#94A3B8]">
-                        {sim.currentActive} → {sim.projectedActive} (+{sim.retained} retained &amp; newly engaged girls)
-                      </p>
-                    </div>
-
-                    {/* Metric 3: Teen Dropout Hazard Drop */}
-                    <div
-                      className="rounded-md p-2.5"
-                      style={{
-                        background: "#13222F",
-                        border: sim.hazardDrop > 0 ? "1px solid rgba(245,158,11,0.3)" : "1px solid #1E3243",
-                      }}
-                    >
-                      <span className="text-[10px] font-semibold text-[#94A3B8] block">Teen Dropout Hazard Drop</span>
-                      <div
-                        className="kpi mt-1 text-base font-extrabold tabular-nums"
-                        style={{ color: sim.hazardDrop > 0 ? AMBER : "#94A3B8" }}
-                      >
-                        {sim.hazardDrop > 0 ? `−${sim.hazardDrop.toFixed(1)} pp` : "0.0 pp"}
-                      </div>
-                      <p className="mt-0.5 text-[10px] text-[#94A3B8]">
-                        {k.dropoutCliff.toFixed(1)}% → {sim.projected.toFixed(1)}% ({sim.hazardDrop > 0 ? `-${sim.hazardDrop.toFixed(1)} pp reduction` : "Baseline hazard"})
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Transparent methodology disclaimer */}
-                  <p className="text-[10px] italic text-[#94A3B8] leading-tight pt-1">
-                    Hypothetical Policy Elasticity Model — weighted against Eurobarometer 574 (37% time), Women in Sport (78% period/kit), and PMC12330288 (63% female role-model) barrier elasticities.
-                  </p>
+                <div className="rounded-lg p-2.5 bg-[#0B151E] border border-[#1E3243] text-[11px] text-[#94A3B8]">
+                  <span className="font-semibold text-[#F8FAFC]">⚡ Live Parity Engine: </span>
+                  Adjust sliders to project female active retention, prime slot equity, and club growth live across the telemetry bar on the left.
                 </div>
 
                 {mode === "macro" && (
