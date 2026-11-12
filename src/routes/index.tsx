@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useRef, type ReactNode, type ChangeEvent } from "react";
+import { useMemo, useState, useEffect, useRef, type ReactNode, type ChangeEvent } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
@@ -52,29 +52,88 @@ const TIP_STYLE   = {
   itemStyle: { color: "#94A3B8" },
 };
 
-// ── Runner SVG watermark — Electric Cyan, opacity-25, glowing drop-shadow
+// ── Neon Runner Watermark — strips white background via offscreen HTML5 canvas on mount, centers behind retention curve
 function RunnerWatermark() {
+  const [dataUrl, setDataUrl] = useState<string>("/Neon%20Hologram%20Runner.png");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let active = true;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = "/Neon%20Hologram%20Runner.png";
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+        if (!w || !h) return;
+
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+
+        ctx.drawImage(img, 0, 0);
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const d = imgData.data;
+        let modified = false;
+
+        // Convert near-white pixels (r > 220 && g > 220 && b > 220) to transparent with smooth anti-aliased edge fading
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i]!;
+          const g = d[i + 1]!;
+          const b = d[i + 2]!;
+          const a = d[i + 3]!;
+          if (a === 0) continue;
+
+          // Check if pixel is in near-white range
+          if (r > 200 && g > 200 && b > 200) {
+            modified = true;
+            if (r > 220 && g > 220 && b > 220) {
+              // Full transparency for near-white outer background
+              d[i + 3] = 0;
+            } else {
+              // Smooth anti-aliased edge fading between 200 and 220
+              const minChannel = Math.min(r, g, b);
+              const fade = Math.max(0, Math.min(1, (220 - minChannel) / 20));
+              d[i + 3] = Math.round(a * fade);
+            }
+          }
+        }
+
+        if (modified) {
+          ctx.putImageData(imgData, 0, 0);
+          const processedUrl = canvas.toDataURL("image/png");
+          if (active) setDataUrl(processedUrl);
+        }
+      } catch (err) {
+        console.warn("Offscreen canvas runner background strip error:", err);
+      }
+    };
+
+    img.onerror = () => {
+      if (active) setDataUrl("/neon-runner.png");
+    };
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 120 180"
+    <div
+      className="pointer-events-none select-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 m-auto h-[78%]"
-      style={{
-        color: TEAL,
-        opacity: 0.25,
-        filter: "drop-shadow(0 0 14px rgba(45,212,191,0.65))",
-      }}
     >
-      {/* Athletic female runner silhouette */}
-      <circle cx="62" cy="18" r="11" fill="currentColor" />
-      <path d="M62 29 L55 70 L44 110 L38 148" stroke="currentColor" strokeWidth="8" strokeLinecap="round" fill="none" />
-      <path d="M62 29 L70 70 L82 108 L90 148" stroke="currentColor" strokeWidth="8" strokeLinecap="round" fill="none" />
-      <path d="M55 70 L38 92 L28 88" stroke="currentColor" strokeWidth="7" strokeLinecap="round" fill="none" />
-      <path d="M70 70 L88 88 L100 82" stroke="currentColor" strokeWidth="7" strokeLinecap="round" fill="none" />
-      <path d="M38 148 L28 162 M44 110 L32 118" stroke="currentColor" strokeWidth="6" strokeLinecap="round" fill="none" />
-      <path d="M90 148 L102 160 M82 108 L96 114" stroke="currentColor" strokeWidth="6" strokeLinecap="round" fill="none" />
-    </svg>
+      <img
+        src={dataUrl}
+        alt=""
+        className="pointer-events-none select-none max-h-[210px] w-auto object-contain opacity-30 drop-shadow-[0_0_16px_rgba(45,212,191,0.45)]"
+      />
+    </div>
   );
 }
 
@@ -728,7 +787,7 @@ function Dashboard() {
             <Card title="Active Retention Curve — Female vs. Male by Cohort" accent="teal">
               <div className="relative h-64">
                 <RunnerWatermark />
-                <ResponsiveContainer>
+                <ResponsiveContainer className="relative z-10">
                   <AreaChart data={k.ages} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
                     <defs>
                       <linearGradient id="femaleGradient" x1="0" y1="0" x2="0" y2="1">
@@ -813,7 +872,7 @@ function Dashboard() {
           <div className="space-y-5 lg:col-span-3">
             <Card title="Prime-Hour Disparity (18:00–21:00)" accent="coral">
               <div className="h-44">
-                <ResponsiveContainer>
+                <ResponsiveContainer className="relative z-10">
                   <BarChart data={k.days} margin={{ top: 2, right: 4, left: -20, bottom: 0 }}>
                     <CartesianGrid {...CHART_GRID} vertical={false} />
                     <XAxis dataKey="day" tick={CHART_TICK_X} axisLine={false} tickLine={false} />
