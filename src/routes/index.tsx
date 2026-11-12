@@ -1171,55 +1171,60 @@ function Dashboard() {
                           strokeDasharray="4 2"
                           label={{ value: "Puberty & Schedule Cliff", fill: AMBER, fontSize: 10, position: "insideTopRight" }}
                         />
-                        {isAfterMode ? (
-                          <>
-                            {/* Faint dashed line for Female Baseline (%) */}
-                            <Area
-                              type="linear"
-                              dataKey="female"
-                              name="Female Baseline (%)"
-                              stroke="#94A3B8"
-                              fill="none"
-                              strokeWidth={2}
-                              strokeDasharray="4 4"
-                              opacity={0.45}
-                            />
-                            {/* Bright #C084FC solid line for Female Active — Post-Intervention (%) */}
-                            <Area
-                              type="linear"
-                              dataKey="projectedFemale"
-                              name="Female Active — Post-Intervention (%)"
-                              stroke={VIOLET}
-                              fill="url(#femaleGradient)"
-                              strokeWidth={3}
-                              dot={{ fill: VIOLET, r: 4, stroke: "#080A12", strokeWidth: 2 }}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <Area
-                              type="linear"
-                              dataKey="female"
-                              name="Female Active (%)"
-                              stroke={VIOLET}
-                              fill="url(#femaleGradient)"
-                              strokeWidth={3}
-                              dot={{ fill: VIOLET, r: 3 }}
-                            />
-                            {(s1 > 0 || s2 > 0 || s3 > 0) && (
-                              <Area
-                                type="linear"
-                                dataKey="projectedFemale"
-                                name="Female Active — Post-Intervention (%)"
-                                stroke={VIOLET}
-                                fill="none"
-                                strokeWidth={2.5}
-                                strokeDasharray="6 4"
-                                dot={{ fill: VIOLET, r: 4, stroke: "#080A12", strokeWidth: 1.5 }}
-                              />
-                            )}
-                          </>
+                        {/* 1. Female Baseline in After Mode (Dashed grey line) */}
+                        {isAfterMode && (
+                          <Area
+                            key="female-baseline-dashed"
+                            type="linear"
+                            dataKey="female"
+                            name="Female Baseline (%)"
+                            stroke="#94A3B8"
+                            fill="none"
+                            strokeWidth={2}
+                            strokeDasharray="4 4"
+                            opacity={0.45}
+                          />
                         )}
+
+                        {/* 2. Female Active Baseline (Solid #C084FC Orchid-Violet curve in Before Mode) */}
+                        {!isAfterMode && (
+                          <Area
+                            key="female-active-baseline"
+                            type="linear"
+                            dataKey="female"
+                            name="Female Active (%)"
+                            stroke={VIOLET}
+                            fill="url(#femaleGradient)"
+                            strokeWidth={3}
+                            dot={{ fill: VIOLET, r: 3 }}
+                          />
+                        )}
+
+                        {/* 3. Female Projected Active Line (Lifted solid in After Mode, or dashed when manual sliders > 0) */}
+                        {isAfterMode ? (
+                          <Area
+                            key="female-projected-after"
+                            type="linear"
+                            dataKey="projectedFemale"
+                            name="Female Active — Post-Intervention (%)"
+                            stroke={VIOLET}
+                            fill="url(#femaleGradient)"
+                            strokeWidth={3}
+                            dot={{ fill: VIOLET, r: 4, stroke: "#080A12", strokeWidth: 2 }}
+                          />
+                        ) : (s1 > 0 || s2 > 0 || s3 > 0) ? (
+                          <Area
+                            key="female-projected-sliders"
+                            type="linear"
+                            dataKey="projectedFemale"
+                            name="Female Active — Post-Intervention (%)"
+                            stroke={VIOLET}
+                            fill="none"
+                            strokeWidth={2.5}
+                            strokeDasharray="6 4"
+                            dot={{ fill: VIOLET, r: 4, stroke: "#080A12", strokeWidth: 1.5 }}
+                          />
+                        ) : null}
                         <Area
                           type="linear"
                           dataKey="male"
