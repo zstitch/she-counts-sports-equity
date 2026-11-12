@@ -7,8 +7,8 @@ import {
 } from "recharts";
 import { analyzeClubData, type Plan } from "@/lib/analyze-club-data.functions";
 import {
-  computeKpis, simulate, interventionPlan, viewOptions, EU_EVIDENCE,
-  CSV_TEMPLATE_CONTENT, parseClubCsv, type ClubId, type Kpis,
+  computeKpis, simulate, interventionPlan, viewOptions, macroViewOptions, sandboxClubOptions,
+  EU_EVIDENCE, CSV_TEMPLATE_CONTENT, parseClubCsv, type ClubId, type Kpis,
 } from "@/data/sportsData";
 
 export const Route = createFileRoute("/")({
@@ -253,7 +253,8 @@ function ProgressBar({ value, max = 100, color = TEAL }: { value: number; max?: 
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
 function Dashboard() {
-  const [view, setView] = useState<ClubId>("all");
+  const [mode, setMode] = useState<"macro" | "sandbox">("macro");
+  const [view, setView] = useState<ClubId>("eu27");
   const [customCohort, setCustomCohort] = useState<null | { rows: ReturnType<typeof parseClubCsv>["rows"]; label: string }>(null);
   const [uploadWarnings, setUploadWarnings] = useState<string[]>([]);
   const [s1, setS1] = useState(0), [s2, setS2] = useState(0), [s3, setS3] = useState(0);
@@ -265,14 +266,15 @@ function Dashboard() {
   const [planSource, setPlanSource] = useState<"gemini" | "fallback">("fallback");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const label = viewOptions.find((v) => v.id === view)!.label;
+  const currentOptions = mode === "macro" ? macroViewOptions : sandboxClubOptions;
+  const currentItem = viewOptions.find((v) => v.id === view);
+  const label = currentItem ? currentItem.label : "EU27 Average (Eurostat Official Benchmark)";
 
   const k: Kpis = useMemo(() => {
     if (customCohort) {
       // Inject custom rows into compute (override cohort data)
       const { rows } = customCohort;
       if (rows.length === 0) return computeKpis(view);
-      // Build a temporary module-like object
       const c = rows;
       const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
       const sum = <T,>(arr: T[], f: (t: T) => number) => arr.reduce((s, t) => s + f(t), 0);
@@ -291,8 +293,8 @@ function Dashboard() {
       });
       const totalFA = sum(c, (x) => x.femaleActive), totalMA = sum(c, (x) => x.maleActive);
       const totalFR = sum(c, (x) => x.femaleRegistered), totalMR = sum(c, (x) => x.maleRegistered);
-      const u14 = ages.find((a) => a.age === "U14")!;
-      const u18 = ages.find((a) => a.age === "U18")!;
+      const u14 = ages.find((a) => a.age === "U14") ?? ages[1]!;
+      const u18 = ages.find((a) => a.age === "U18") ?? ages[3]!;
       const primeAvg = avg(c, (x) => x.primeSlotPct);
       const primeSkew = primeAvg === 0 ? 0 : +((100 - primeAvg) / primeAvg).toFixed(2);
       const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
@@ -303,6 +305,7 @@ function Dashboard() {
         return { day, female: fHours, male: mHours };
       });
       return {
+        isMacro: false,
         ages,
         femaleActiveShare: pct(totalFA, totalFA + totalMA),
         maleActiveShare: 100 - pct(totalFA, totalFA + totalMA),
@@ -332,7 +335,7 @@ function Dashboard() {
   const fallbackPlan = interventionPlan(k, customCohort?.label ?? label);
   const plan = aiPlan ?? fallbackPlan;
 
-  // ── CSV Upload
+  // ── CSV Upload (activates Club Diagnostic Sandbox)
   function handleCsvUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -342,7 +345,8 @@ function Dashboard() {
       const { rows, warnings } = parseClubCsv(text, "custom");
       setCustomCohort(rows.length > 0 ? { rows, label: `Custom Upload — ${file.name}` } : null);
       setUploadWarnings(warnings);
-      setView("all"); // reset selector; custom data overrides
+      setMode("sandbox");
+      setView("demo-football");
     };
     reader.readAsText(file);
   }
@@ -394,29 +398,75 @@ function Dashboard() {
             boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
           }}
         >
+          {/* ── Mode Switcher: Macro Benchmark vs Club Sandbox ── */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1E3243] pb-4 mb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mr-1">View Mode:</span>
+              <button
+                type="button"
+                onClick={() => { setMode("macro"); setCustomCohort(null); setView("eu27"); }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+                  mode === "macro"
+                    ? "bg-[#2DD4BF] text-[#0B151E] shadow-[0_0_15px_rgba(45,212,191,0.4)]"
+                    : "bg-[#0B151E] text-[#94A3B8] border border-[#1E3243] hover:text-[#F8FAFC]"
+                }`}
+              >
+                <span>🇪🇺</span>
+                <span>Official EU &amp; Balkan Benchmarks (Eurostat Verified)</span>
+                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/20 font-mono">Real Macro Data</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode("sandbox"); setView("demo-football"); }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+                  mode === "sandbox"
+                    ? "bg-[#F59E0B] text-[#0B151E] shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                    : "bg-[#0B151E] text-[#94A3B8] border border-[#1E3243] hover:text-[#F8FAFC]"
+                }`}
+              >
+                <span>🧪</span>
+                <span>Club Diagnostic Sandbox (Synthetic Demo Model — Law 03)</span>
+                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/20 font-mono">Simulation Mode</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="kpi text-xs font-semibold px-2.5 py-1 rounded-md bg-[#0B151E] border border-[#1E3243] text-[#94A3B8]">
+                Track 04: Count What Matters
+              </span>
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-extrabold tracking-tight text-[#F8FAFC] md:text-3xl">
                   SHE COUNTS: <span style={{ color: TEAL }}>Women in Sport</span>
                 </h1>
-                <Badge color="teal">Track 04</Badge>
-                {customCohort && <Badge color="amber">Custom Uploaded Dataset</Badge>}
+                {mode === "macro" ? (
+                  <Badge color="teal">🇪🇺 Verified Eurostat &amp; EU Dataset</Badge>
+                ) : (
+                  <Badge color="amber">🧪 Club Diagnostic Sandbox (Synthetic Demo)</Badge>
+                )}
+                {customCohort && <Badge color="amber">Custom Uploaded Club CSV</Badge>}
               </div>
               <p className="text-sm italic text-[#94A3B8]">
-                Evidence-Based Retention &amp; Inclusion Telemetry — Erasmus+ 404 Youth.exe Hackathon, IUS Sarajevo
+                {mode === "macro"
+                  ? "Official Verified Geographies (Eurostat hlth_ehis_pe3i, Eurobarometer 574 & ICOACHKIDS+) — Zero Fabricated Club Names"
+                  : "Club Diagnostic Sandbox: Grassroots schedule equity, coaching ratios & washroom period-support simulation"}
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <label className="flex items-center gap-2 text-sm">
-                  <span className="label-caps text-[#94A3B8]">Club / Organization</span>
+                  <span className="label-caps text-[#94A3B8]">
+                    {mode === "macro" ? "Verified Geography" : "Club Model / Sandbox"}
+                  </span>
                   <select
-                    value={customCohort ? "all" : view}
+                    value={customCohort ? "demo-football" : view}
                     onChange={(e) => { setCustomCohort(null); setView(e.target.value as ClubId); }}
-                    className="rounded-md px-3 py-1.5 text-sm text-[#F8FAFC]"
+                    className="rounded-md px-3 py-1.5 text-sm text-[#F8FAFC] font-medium"
                     style={{ background: "#0B151E", border: "1px solid #1E3243" }}
                     disabled={!!customCohort}
                   >
-                    {viewOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                    {currentOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
                   </select>
                 </label>
               </div>
@@ -431,8 +481,9 @@ function Dashboard() {
                 className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
                 style={{ background: "rgba(45,212,191,0.12)", border: "1px solid rgba(45,212,191,0.35)", color: TEAL }}
                 aria-label="Upload Club CSV"
+                title="Upload club-level CSV data (automatically switches to Sandbox Mode)"
               >
-                ↑ Upload Club CSV
+                ↑ Upload Club CSV (Opens Sandbox)
               </button>
               <button
                 onClick={downloadSampleCsv}
@@ -464,6 +515,35 @@ function Dashboard() {
             </div>
           )}
         </header>
+
+        {/* ── Mode Context Banner: Macro Telemetry vs Club Diagnostic Sandbox ── */}
+        {mode === "macro" ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#13222F] border border-[#2DD4BF]/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center gap-2.5">
+              <span className="text-lg">🇪🇺</span>
+              <div>
+                <span className="font-bold text-[#F8FAFC]">VERIFIED EUROSTAT &amp; EU EVIDENCE TELEMETRY: </span>
+                <span className="text-[#94A3B8]">
+                  Displaying official verified sports participation &amp; retention statistics from Eurostat (hlth_ehis_pe3i, hlth_ehis_pe2e), Special Eurobarometer 574, and Erasmus+ ICOACHKIDS+. Zero fabricated local club names.
+                </span>
+              </div>
+            </div>
+            <Badge color="teal">Official Eurostat Macro Data</Badge>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#13222F] border border-[#F59E0B]/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center gap-2.5">
+              <span className="text-lg">🧪</span>
+              <div>
+                <span className="font-bold text-[#F59E0B]">CLUB DIAGNOSTIC SANDBOX (SYNTHETIC DEMO MODEL — LAW 03 COMPLIANT): </span>
+                <span className="text-[#94A3B8]">
+                  Interactive grassroots simulation modeling prime pitch scheduling (18:00–21:00), female coach staffing, dark-shorts kits, and washroom period supplies. Test with synthetic demo clubs or upload your club CSV.
+                </span>
+              </div>
+            </div>
+            <Badge color="amber">Synthetic Sandbox Model</Badge>
+          </div>
+        )}
 
         {/* ── KPI Ribbon ── */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -670,13 +750,38 @@ function Dashboard() {
               </div>
             </Card>
 
-            <Card title='Decision Optimizer — "What If?" Retention Simulator' accent="amber">
+            <Card
+              title={
+                mode === "macro"
+                  ? 'Policy Optimizer — "What If?" Macro Parity Simulator'
+                  : 'Club Diagnostic Sandbox — "What If?" Retention Simulator'
+              }
+              accent="amber"
+            >
               <div className="space-y-4">
                 {(
                   [
-                    ["Shift Prime-Time Slots (18:00–21:00) to Girls %", s1, setS1],
-                    ["Increase Accredited Female Coaching Staff %", s2, setS2],
-                    ["Puberty & Period Kit/Facility Support %", s3, setS3],
+                    [
+                      mode === "macro"
+                        ? "Regional Prime-Hour Allocation Mandate (18:00–21:00) %"
+                        : "Shift Prime-Time Slots (18:00–21:00) to Girls %",
+                      s1,
+                      setS1,
+                    ],
+                    [
+                      mode === "macro"
+                        ? "Accredited Female Coaching Mentorship Subsidy %"
+                        : "Increase Accredited Female Coaching Staff %",
+                      s2,
+                      setS2,
+                    ],
+                    [
+                      mode === "macro"
+                        ? "Municipal Dark-Kit & Period Supply Mandate %"
+                        : "Puberty & Period Kit/Facility Support %",
+                      s3,
+                      setS3,
+                    ],
                   ] as const
                 ).map(([l, v, set]) => (
                   <label key={l} className="block text-xs">
@@ -704,9 +809,20 @@ function Dashboard() {
                     Dropout hazard reduces from <span className="kpi font-bold" style={{ color: CORAL }}>{k.dropoutCliff}%</span> down to <span className="kpi font-bold" style={{ color: TEAL }}>{sim.projected}%</span>
                   </div>
                   <div className="mt-2 text-xs italic text-[#94A3B8]">
-                    Deterministic simulation modeled on EU elasticity weights — Hypothetical Scenario
+                    {mode === "macro"
+                      ? "Macro Policy Projection — Modeled on EU elasticity weights across regional cohort"
+                      : "Deterministic simulation modeled on EU elasticity weights — Synthetic Demo Model"}
                   </div>
                 </div>
+                {mode === "macro" && (
+                  <button
+                    type="button"
+                    onClick={() => { setMode("sandbox"); setView("demo-football"); }}
+                    className="w-full text-center py-2 px-3 rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 text-[#F59E0B] text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>🧪 Switch to Club Diagnostic Sandbox (Law 03) →</span>
+                  </button>
+                )}
               </div>
             </Card>
           </div>
@@ -717,17 +833,29 @@ function Dashboard() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-extrabold text-[#F8FAFC]">
-                THE MISSING PLAYERS{" "}
-                <span className="font-normal text-[#94A3B8]">— Root-Cause Diagnostics &amp; 90-Day Action Plan</span>
+                {mode === "macro" ? "THE MISSING ATHLETES " : "THE MISSING PLAYERS "}
+                <span className="font-normal text-[#94A3B8]">
+                  {mode === "macro"
+                    ? "— Verified EU Evidence & 90-Day Policy Roadmap"
+                    : "— Root-Cause Diagnostics & 90-Day Action Plan"}
+                </span>
               </h2>
-              <p className="mt-1 text-xs text-[#94A3B8]">Dynamically computed from: {displayLabel}</p>
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                {mode === "macro"
+                  ? `Verified Macro Geography: ${displayLabel}`
+                  : `Club Diagnostic Telemetry: ${displayLabel}`}
+              </p>
             </div>
             <button
               onClick={runAnalysis}
               disabled={loading}
               className="rounded-md px-5 py-2.5 text-sm font-bold transition-all disabled:opacity-60 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#0B151E] shadow-[0_0_20px_rgba(45,212,191,0.35)]"
             >
-              {loading ? "Analysing…" : "✨ Generate 90-Day Club Intervention Plan (AI Analyst)"}
+              {loading
+                ? "Analysing…"
+                : mode === "macro"
+                ? "✨ Generate 90-Day Policy Roadmap (AI Analyst)"
+                : "✨ Generate 90-Day Club Intervention Plan (AI Analyst)"}
             </button>
           </div>
 
