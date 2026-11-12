@@ -166,3 +166,4 @@ export const BENCHMARK_EVIDENCE_REGISTRY: BenchmarkEvidence[] = [
     year: 2024,
   },
 ];
+

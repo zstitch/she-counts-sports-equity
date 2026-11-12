@@ -27,35 +27,42 @@ const cardSchema = {
 
 // analyze-club-data: sends only pre-calculated metrics to Gemini; returns a 3-card plan.
 export const analyzeClubData = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => payloadSchema.parse(d))
+  .validator((d: unknown) => payloadSchema.parse(d))
   .handler(async ({ data }): Promise<{ ok: true; plan: Plan } | { ok: false; error: string }> => {
-    const key = process.env["GEMINI_API_KEY"];
-    if (!key) return { ok: false, error: "GEMINI_API_KEY is not configured" };
+    const key =
+      process.env["VITE_GEMINI_API_KEY"] ||
+      process.env["GEMINI_API_KEY"];
+    if (!key) return { ok: false, error: "VITE_GEMINI_API_KEY is not configured" };
     const prompt = `You are a sports-equity analyst. Using ONLY the figures in the JSON below, write a 90-Day Club Intervention Plan as exactly 3 cards titled "30-Day Quick Wins", "60-Day Structural Shifts", "90-Day Retention Audit". Each card: 2-4 concrete actions and 2-3 measurable target KPIs (metric + numeric target relative to a baseline from the JSON).
 STRICT RULES: Never invent statistics, names, or sources. Every number you write must either appear in the JSON or be a target explicitly derived from a JSON value (state the baseline). Cite the JSON figure you rely on in each action.
 JSON:
 ${JSON.stringify(data)}`;
-    try {
-      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: { type: "OBJECT", properties: { cards: { type: "ARRAY", items: cardSchema } }, required: ["cards"] },
-          },
-        }),
-      });
-      if (!res.ok) return { ok: false, error: `Gemini returned ${res.status}` };
-      const j = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-      const text = j.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) return { ok: false, error: "Empty Gemini response" };
-      const parsed = JSON.parse(text) as { cards: PlanCard[] };
-      if (!Array.isArray(parsed.cards) || parsed.cards.length !== 3) return { ok: false, error: "Unexpected plan shape" };
-      return { ok: true, plan: { title: `90-Day Club Intervention Plan — ${data.club}`, cards: parsed.cards } };
-    } catch (e) {
-      console.error("analyze-club-data failed", e);
-      return { ok: false, error: "Gemini request failed" };
+
+    const models = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-flash-latest"];
+    for (const model of models) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: { type: "OBJECT", properties: { cards: { type: "ARRAY", items: cardSchema } }, required: ["cards"] },
+            },
+          }),
+        });
+        if (res.status === 404) continue;
+        if (!res.ok) continue;
+        const j = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+        const text = j.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) continue;
+        const parsed = JSON.parse(text) as { cards: PlanCard[] };
+        if (!Array.isArray(parsed.cards) || parsed.cards.length !== 3) continue;
+        return { ok: true, plan: { title: `90-Day Plan — ${data.club}`, cards: parsed.cards } };
+      } catch (e) {
+        console.error(`Gemini model ${model} failed`, e);
+      }
     }
+    return { ok: false, error: "Gemini request failed on all model endpoints" };
   });
