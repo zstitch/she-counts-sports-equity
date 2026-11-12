@@ -9,12 +9,26 @@ import {
   METHODOLOGICAL_NOTE,
   BIH_STATS,
   BENCHMARK_EVIDENCE_REGISTRY,
+  SPORT_MODALITY_SPLIT,
+  SPORT_FORMAT_ANALYTICAL_INSIGHT,
 } from "./euBenchmarks";
 
-export { METHODOLOGICAL_NOTE, BIH_STATS, BENCHMARK_EVIDENCE_REGISTRY };
+export {
+  METHODOLOGICAL_NOTE,
+  BIH_STATS,
+  BENCHMARK_EVIDENCE_REGISTRY,
+  SPORT_MODALITY_SPLIT,
+  SPORT_FORMAT_ANALYTICAL_INSIGHT,
+};
 
 export type GeoId = "bih" | "eu27" | "croatia" | "serbia" | "slovenia";
-export type DemoClubId = "demo-football" | "demo-multisport" | "demo-basketball";
+export type DemoClubId =
+  | "demo-football"
+  | "demo-basketball"
+  | "demo-tennis"
+  | "demo-swimming"
+  | "demo-volleyball"
+  | "demo-multisport";
 export type LegacyClubId = "all" | "sarajevo-fc" | "ius-sports" | "bosna-bb";
 export type ViewId = GeoId | DemoClubId | LegacyClubId;
 export type ClubId = ViewId;
@@ -76,31 +90,61 @@ export const macroViewOptions: ViewOption[] = [
   },
 ];
 
-/** 2. Club Diagnostic Sandbox (Synthetic Demo Models — Law 03 Compliant) */
+/** 2. Club Diagnostic Sandbox (Synthetic Demo Models by Sport Discipline — Law 03 Compliant) */
 export const sandboxClubOptions: ViewOption[] = [
   {
     id: "demo-football",
-    label: "Grassroots Football Club (Synthetic Demo Model)",
-    shortLabel: "Youth Football Club",
+    label: "Football (Male-Skewed Club Model)",
+    shortLabel: "Football Club",
     category: "sandbox",
     sourceBadge: "Synthetic Demo (Law 03)",
-    description: "Anonymized youth football club model showing evening pitch squeeze and low female coach representation.",
-  },
-  {
-    id: "demo-multisport",
-    label: "University Athletics & Multi-Sport (Synthetic Demo Model)",
-    shortLabel: "University Multi-Sport",
-    category: "sandbox",
-    sourceBadge: "Synthetic Demo (Law 03)",
-    description: "Anonymized university multi-sport club model with higher coach parity and active menstrual cycle literacy.",
+    description:
+      "Anonymized youth football club model showing evening pitch squeeze (26% prime slots) and low female coach representation (8%).",
   },
   {
     id: "demo-basketball",
-    label: "Youth Basketball Academy (Synthetic Demo Model)",
-    shortLabel: "Youth Basketball",
+    label: "Basketball (Male-Skewed Club Model)",
+    shortLabel: "Basketball Academy",
     category: "sandbox",
     sourceBadge: "Synthetic Demo (Law 03)",
-    description: "Anonymized youth basketball academy model with moderate indoor facility access and scholarship programs.",
+    description:
+      "Anonymized basketball academy model with heavy indoor court squeeze (34% prime slots) and late evening schedules.",
+  },
+  {
+    id: "demo-tennis",
+    label: "Tennis / Racket Sports (Individual Parity Model)",
+    shortLabel: "Tennis & Racket",
+    category: "sandbox",
+    sourceBadge: "Synthetic Demo (Law 03)",
+    description:
+      "Individual and small-group court model showing closer court parity (47% prime slots) and lower adolescent drop-off (28%).",
+  },
+  {
+    id: "demo-swimming",
+    label: "Swimming (Female-Led Individual Model)",
+    shortLabel: "Aquatic Club",
+    category: "sandbox",
+    sourceBadge: "Synthetic Demo (Law 03)",
+    description:
+      "Self-paced aquatic club model showing lane equity (52% prime slots) and high female coach leadership (45%).",
+  },
+  {
+    id: "demo-volleyball",
+    label: "Volleyball (Female-Strong Team Model)",
+    shortLabel: "Volleyball Club",
+    category: "sandbox",
+    sourceBadge: "Synthetic Demo (Law 03)",
+    description:
+      "Female-strong team sport model with balanced hall allocation (48% prime slots) and strong peer retention.",
+  },
+  {
+    id: "demo-multisport",
+    label: "University Multi-Sport Club (Demo Model)",
+    shortLabel: "University Multi-Sport",
+    category: "sandbox",
+    sourceBadge: "Synthetic Demo (Law 03)",
+    description:
+      "Anonymized university multi-sport club model with balanced coach parity and active menstrual cycle literacy.",
   },
 ];
 
@@ -244,6 +288,27 @@ export const cohort: CohortRow[] = [
   makeRow("demo-basketball", "U16",   40, 21,  62,  54, 32, 22, 45, 35),
   makeRow("demo-basketball", "U18",   34,  12, 58,  48, 32, 22, 45, 35),
   makeRow("demo-basketball", "Uni19+",26,   8, 52,  41, 32, 22, 45, 35),
+
+  // Tennis / Racket Sports (Individual Parity Model)
+  makeRow("demo-tennis", "U12",   50, 48,  55,  52, 48, 36, 65, 40),
+  makeRow("demo-tennis", "U14",   46, 42,  52,  48, 48, 36, 65, 40),
+  makeRow("demo-tennis", "U16",   42, 36,  48,  43, 46, 36, 65, 40),
+  makeRow("demo-tennis", "U18",   38, 29,  45,  38, 46, 36, 65, 40),
+  makeRow("demo-tennis", "Uni19+",32, 24,  40,  32, 46, 36, 65, 40),
+
+  // Swimming (Female-Led Individual Model)
+  makeRow("demo-swimming", "U12",   55, 52,  50,  46, 52, 45, 72, 45),
+  makeRow("demo-swimming", "U14",   50, 46,  48,  43, 52, 45, 72, 45),
+  makeRow("demo-swimming", "U16",   45, 39,  44,  38, 52, 45, 72, 45),
+  makeRow("demo-swimming", "U18",   40, 35,  40,  33, 50, 45, 72, 45),
+  makeRow("demo-swimming", "Uni19+",35, 29,  36,  28, 50, 45, 72, 45),
+
+  // Volleyball (Female-Strong Team Model)
+  makeRow("demo-volleyball", "U12",   60, 56,  45,  40, 48, 38, 60, 42),
+  makeRow("demo-volleyball", "U14",   55, 48,  42,  36, 48, 38, 60, 42),
+  makeRow("demo-volleyball", "U16",   50, 40,  40,  33, 48, 38, 60, 42),
+  makeRow("demo-volleyball", "U18",   44, 32,  36,  28, 46, 38, 60, 42),
+  makeRow("demo-volleyball", "Uni19+",38, 26,  32,  23, 46, 38, 60, 42),
 
   // Legacy aliases for full backward compatibility
   makeRow("sarajevo-fc", "U12",   58, 51, 138, 128, 28, 8,  20, 22),
@@ -467,9 +532,9 @@ export interface ParseCsvResult {
   rows: CohortRow[];
   warnings: string[];
   isMacro: boolean;
-  countryCode?: string;
-  countryRegion?: string;
-  label?: string;
+  countryCode?: string | undefined;
+  countryRegion?: string | undefined;
+  label?: string | undefined;
 }
 
 /** Parse a CSV upload into CohortRow[] (supports both Club and Verified Country Macro CSVs; strips PII columns per Law 03). */
@@ -582,12 +647,19 @@ export function parseClubCsv(
 
   // 2. Standard Club Cohort CSV parsing
   const rows: CohortRow[] = [];
+  const sportIdx = headers.indexOf("sport");
+  let detectedSport = "";
+
   for (let i = 1; i < lines.length; i++) {
     const vals = lines[i]!.split(",").map((v) => v.trim().replace(/^["']|["']$/g, ""));
     const get = (col: string) => {
       const idx = headers.indexOf(col);
       return idx >= 0 ? vals[idx] ?? "" : "";
     };
+    if (sportIdx >= 0 && !detectedSport && vals[sportIdx]) {
+      detectedSport = vals[sportIdx]!;
+    }
+
     const cohortRaw = get("cohort").toUpperCase().replace(/\s+/g, "");
     const ageMap: Record<string, AgeCohort> = {
       U12: "U12", U14: "U14", U16: "U16", U18: "U18",
@@ -614,5 +686,10 @@ export function parseClubCsv(
       )
     );
   }
-  return { rows, warnings, isMacro: false };
+  return {
+    rows,
+    warnings,
+    isMacro: false,
+    ...(detectedSport ? { label: `${detectedSport} (Custom Uploaded Club CSV)` } : {}),
+  };
 }

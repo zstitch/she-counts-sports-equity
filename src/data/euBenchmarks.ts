@@ -91,7 +91,79 @@ export const BIH_STATS: BihStudyStats = {
   },
 };
 
+export const SPORT_FORMAT_ANALYTICAL_INSIGHT =
+  "Girls don't quit physical activity (45% lead in individual sports)—they quit male-dominated external team clubs (31% vs 44%) due to late pitch slots, kit stigma, and lack of female coaches.";
+
+export interface ModalityItem {
+  arena: string;
+  malePct: number;
+  femalePct: number;
+  gapPp: number;
+  gapLabel: string;
+  source: string;
+}
+
+export const SPORT_MODALITY_SPLIT: {
+  maleDominated: ModalityItem[];
+  femaleParity: ModalityItem[];
+} = {
+  maleDominated: [
+    {
+      arena: "Team Sports (Football, Basketball)",
+      malePct: 71.0,
+      femalePct: 55.0,
+      gapPp: -16.0,
+      gapLabel: "−16.0 pp male skew",
+      source: "Women in Sport (2022) Reframing Sport for Teenage Girls",
+    },
+    {
+      arena: "Outside-School Sports Clubs",
+      malePct: 44.0,
+      femalePct: 31.0,
+      gapPp: -13.0,
+      gapLabel: "−13.0 pp male skew",
+      source: "Women in Sport (2022) / Eurostat Survey",
+    },
+    {
+      arena: "Strength & Resistance Training",
+      malePct: 50.2,
+      femalePct: 33.5,
+      gapPp: -16.7,
+      gapLabel: "−16.7 pp male skew",
+      source: "Eurostat (hlth_ehis_pe3i)",
+    },
+  ],
+  femaleParity: [
+    {
+      arena: "Individual & Self-Paced (Running, Swimming, Gym, Cycling)",
+      femalePct: 45.0,
+      malePct: 43.0,
+      gapPp: +2.0,
+      gapLabel: "+2.0 pp female lead",
+      source: "Women in Sport (2022)",
+    },
+    {
+      arena: "School-Only PE Reliance",
+      femalePct: 37.0,
+      malePct: 27.0,
+      gapPp: +10.0,
+      gapLabel: "+10.0 pp higher female reliance on school PE",
+      source: "Women in Sport (2022) / EHIS Aggregate",
+    },
+  ],
+};
+
 export const BENCHMARK_EVIDENCE_REGISTRY: BenchmarkEvidence[] = [
+  {
+    id: "women-in-sport-format-skew",
+    country: "European & UK Research",
+    title: "Women in Sport: Reframing Sport for Teenage Girls (2022)",
+    stat: "45% F vs 43% M in individual sports",
+    finding:
+      "Girls don't quit physical activity—they lead boys in self-paced individual activities (45% vs 43%), but drop out of male-dominated outside-school clubs (31% vs 44%) and team sports (55% vs 71%) due to prime-hour pitch allocation and kit stigma.",
+    url: "https://womeninsport.org/research-and-advice/our-publications/reframing-sport-for-teenage-girls-building-strong-foundations-for-their-futures/",
+    year: 2022,
+  },
   {
     id: "bih-adolescent-baseline",
     country: "Bosnia & Herzegovina (Host Country)",

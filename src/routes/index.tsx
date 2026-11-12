@@ -11,6 +11,7 @@ import {
   computeKpis, simulate, interventionPlan, viewOptions, macroViewOptions, sandboxClubOptions,
   EU_EVIDENCE, CSV_TEMPLATE_CONTENT, parseClubCsv, type ClubId, type Kpis,
   METHODOLOGICAL_NOTE, BENCHMARK_EVIDENCE_REGISTRY,
+  SPORT_MODALITY_SPLIT, SPORT_FORMAT_ANALYTICAL_INSIGHT,
 } from "@/data/sportsData";
 
 export const Route = createFileRoute("/")({
@@ -532,7 +533,7 @@ function Dashboard() {
               <div className="flex flex-wrap items-center gap-3">
                 <label className="flex items-center gap-2 text-sm">
                   <span className="label-caps text-[#94A3B8]">
-                    {mode === "macro" ? "Verified Geography" : "Club Model / Sandbox"}
+                    {mode === "macro" ? "Verified Macro Geography" : "Sport Discipline (Club Model)"}
                   </span>
                   <select
                     value={customCohort ? (customCohort.isMacro ? "bih" : "demo-football") : view}
@@ -912,6 +913,188 @@ function Dashboard() {
             </Card>
           </div>
         </div>
+
+        {/* ── Sport Format Skew — Male-Dominated Clubs vs. Female-Led Activities ── */}
+        <section
+          className="card-lift rounded-xl p-5 md:p-6"
+          style={{
+            background: "#13222F",
+            border: "1px solid #1E3243",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+          }}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1E3243] pb-4 mb-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-extrabold tracking-tight text-[#F8FAFC]">
+                  SPORT FORMAT SKEW
+                </span>
+                <span className="text-sm font-semibold text-[#94A3B8]">
+                  — Male-Dominated Clubs vs. Female-Led Activities
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-[#94A3B8]">
+                Verified empirical data from Women in Sport (2022) &amp; Eurostat (hlth_ehis_pe3i)
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-[#FB7185]/10 border border-[#FB7185]/30 text-[#FB7185]">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FB7185]" />
+                Boys Baseline
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-[#2DD4BF]/10 border border-[#2DD4BF]/30 text-[#2DD4BF]">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#2DD4BF]" />
+                Girls Participation
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Left Column: Male-Dominated Organized Arenas */}
+            <div
+              className="rounded-xl p-4 md:p-5 flex flex-col justify-between"
+              style={{
+                background: "#0B151E",
+                border: "1px solid rgba(251,113,133,0.3)",
+              }}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#1E3243] pb-3 mb-4">
+                  <div>
+                    <h3 className="text-sm font-extrabold text-[#F8FAFC] flex items-center gap-2">
+                      <span className="text-[#FB7185]">▼</span>
+                      <span>Male-Dominated Organized Arenas</span>
+                    </h3>
+                    <p className="text-[11px] text-[#94A3B8]">External team clubs &amp; facility-dependent sports</p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FB7185]/15 text-[#FB7185] border border-[#FB7185]/30">
+                    −13 to −17 pp Deficit
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {SPORT_MODALITY_SPLIT.maleDominated.map((item) => (
+                    <div key={item.arena} className="space-y-1.5">
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="font-semibold text-[#F8FAFC]">{item.arena}</span>
+                        <span className="font-bold text-[#FB7185] font-mono text-[11px]">{item.gapLabel}</span>
+                      </div>
+                      <div className="space-y-1">
+                        {/* Boys Bar */}
+                        <div className="flex items-center gap-2 text-[11px]">
+                          <span className="w-10 text-[#94A3B8]">Boys:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${item.malePct}%`, background: CORAL }}
+                            />
+                          </div>
+                          <span className="w-10 text-right font-mono font-bold text-[#FB7185]">{item.malePct}%</span>
+                        </div>
+                        {/* Girls Bar */}
+                        <div className="flex items-center gap-2 text-[11px]">
+                          <span className="w-10 text-[#94A3B8]">Girls:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${item.femalePct}%`, background: TEAL }}
+                            />
+                          </div>
+                          <span className="w-10 text-right font-mono font-bold text-[#2DD4BF]">{item.femalePct}%</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-[#64748B] italic">Source: {item.source}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Female-Led / Parity Arenas */}
+            <div
+              className="rounded-xl p-4 md:p-5 flex flex-col justify-between"
+              style={{
+                background: "#0B151E",
+                border: "1px solid rgba(45,212,191,0.3)",
+              }}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#1E3243] pb-3 mb-4">
+                  <div>
+                    <h3 className="text-sm font-extrabold text-[#F8FAFC] flex items-center gap-2">
+                      <span className="text-[#2DD4BF]">▲</span>
+                      <span>Female-Led &amp; Parity Arenas</span>
+                    </h3>
+                    <p className="text-[11px] text-[#94A3B8]">Self-paced, individual &amp; school physical education</p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#2DD4BF]/15 text-[#2DD4BF] border border-[#2DD4BF]/30">
+                    +2 to +10 pp Parity Lead
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {SPORT_MODALITY_SPLIT.femaleParity.map((item) => (
+                    <div key={item.arena} className="space-y-1.5">
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="font-semibold text-[#F8FAFC]">{item.arena}</span>
+                        <span className="font-bold text-[#2DD4BF] font-mono text-[11px]">{item.gapLabel}</span>
+                      </div>
+                      <div className="space-y-1">
+                        {/* Girls Bar */}
+                        <div className="flex items-center gap-2 text-[11px]">
+                          <span className="w-10 text-[#94A3B8]">Girls:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${item.femalePct}%`, background: TEAL }}
+                            />
+                          </div>
+                          <span className="w-10 text-right font-mono font-bold text-[#2DD4BF]">{item.femalePct}%</span>
+                        </div>
+                        {/* Boys Bar */}
+                        <div className="flex items-center gap-2 text-[11px]">
+                          <span className="w-10 text-[#94A3B8]">Boys:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${item.malePct}%`, background: CORAL }}
+                            />
+                          </div>
+                          <span className="w-10 text-right font-mono font-bold text-[#FB7185]">{item.malePct}%</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-[#64748B] italic">Source: {item.source}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Analytical Insight Callout */}
+          <div
+            className="mt-5 rounded-lg p-4 text-xs"
+            style={{
+              background: "rgba(45,212,191,0.08)",
+              border: "1px solid rgba(45,212,191,0.35)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-lg leading-none" role="img" aria-label="insight">💡</span>
+              <div className="space-y-1">
+                <span className="font-bold text-[#2DD4BF] text-xs uppercase tracking-wide">
+                  Core Analytical Insight:
+                </span>
+                <p className="text-xs text-[#F8FAFC] font-medium leading-relaxed italic">
+                  &ldquo;{SPORT_FORMAT_ANALYTICAL_INSIGHT}&rdquo;
+                </p>
+                <p className="text-[11px] text-[#94A3B8] pt-1">
+                  When physical activity is self-paced or structured safely in schools, adolescent girls maintain equal or greater engagement. The cliff occurs specifically within traditional club environments where pitch access, coaching demographics, and kit culture remain heavily skewed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ── The Missing Players — Root-Cause Diagnostics ── */}
         <section className="space-y-4">
