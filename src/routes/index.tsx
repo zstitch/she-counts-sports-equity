@@ -313,6 +313,62 @@ function ProgressBar({ value, max = 100, color = TEAL }: { value: number; max?: 
   );
 }
 
+// ── Controlled telemetry range slider with zero lag and decorative active track
+function ControlledTelemetrySlider({
+  label,
+  value,
+  onChange,
+  accentColor = TEAL,
+}: {
+  label: string;
+  value: number;
+  onChange: (val: number) => void;
+  accentColor?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium text-[#94A3B8]">{label}</span>
+        <span className="kpi font-extrabold text-[#F8FAFC] tabular-nums">{value}%</span>
+      </div>
+      <div className="relative flex items-center h-6 w-full">
+        {/* Decorative background track (pointer-events-none) */}
+        <div className="pointer-events-none absolute inset-x-0 h-2 rounded-full bg-[#1E3243]" />
+
+        {/* Decorative active progress fill (pointer-events-none) */}
+        <div
+          className="pointer-events-none absolute left-0 h-2 rounded-full transition-none shadow-[0_0_8px_rgba(45,212,191,0.35)]"
+          style={{
+            width: `${value}%`,
+            background: `linear-gradient(90deg, ${accentColor}cc 0%, ${accentColor} 100%)`,
+          }}
+        />
+
+        {/* Decorative thumb circle (pointer-events-none) */}
+        <div
+          className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#0B151E] shadow-[0_0_10px_rgba(45,212,191,0.7)]"
+          style={{
+            left: `${value}%`,
+            backgroundColor: accentColor,
+          }}
+        />
+
+        {/* Real native range input on top (relative z-20 w-full h-6 opacity-0 cursor-pointer) */}
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="relative z-20 h-6 w-full cursor-pointer opacity-0"
+          aria-label={label}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── Main Dashboard ───────────────────────────────────────────────────────────
 function Dashboard() {
   const [mode, setMode] = useState<"macro" | "sandbox">("macro");
@@ -400,6 +456,16 @@ function Dashboard() {
   }, [view, customCohort]);
 
   const sim = simulate(k, s1, s2, s3);
+  const isInterventionActive = s1 > 0 || s2 > 0 || s3 > 0;
+  const chartData = useMemo(() => {
+    return k.ages.map((a, idx) => {
+      const proj = sim.projectedAges?.[idx]?.projectedFemale ?? a.female;
+      return {
+        ...a,
+        projectedFemale: isInterventionActive ? proj : undefined,
+      };
+    });
+  }, [k.ages, sim.projectedAges, isInterventionActive]);
   const fallbackPlan = interventionPlan(k, customCohort?.label ?? label);
   const plan = aiPlan ?? fallbackPlan;
 
@@ -788,7 +854,7 @@ function Dashboard() {
               <div className="relative h-64">
                 <RunnerWatermark />
                 <ResponsiveContainer className="relative z-10">
-                  <AreaChart data={k.ages} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
+                  <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
                     <defs>
                       <linearGradient id="femaleGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={TEAL} stopOpacity={0.38} />
@@ -805,13 +871,19 @@ function Dashboard() {
                     <Tooltip {...TIP_STYLE} />
                     <Legend
                       wrapperStyle={{ color: "#94A3B8", fontSize: 11 }}
-                      formatter={(value) =>
-                        value === "Female Active (%)" ? (
-                          <span style={{ color: "#F8FAFC" }}>Female Active (%)</span>
-                        ) : (
-                          <span style={{ color: "#94A3B8" }}>Male Active (%)</span>
-                        )
-                      }
+                      formatter={(value) => {
+                        if (value === "Female Active (%)") {
+                          return <span style={{ color: "#F8FAFC" }}>Female Active (%)</span>;
+                        }
+                        if (value === "Projected Post-Intervention (%)") {
+                          return (
+                            <span style={{ color: TEAL, fontWeight: 700 }}>
+                              ✨ Projected Post-Intervention (%) [Dashed]
+                            </span>
+                          );
+                        }
+                        return <span style={{ color: "#94A3B8" }}>Male Active (%)</span>;
+                      }}
                     />
                     <ReferenceLine
                       x="U14"
@@ -831,6 +903,18 @@ function Dashboard() {
                       stroke={CORAL} fill="url(#maleGradient)"
                       strokeWidth={2.5} dot={{ fill: CORAL, r: 3 }}
                     />
+                    {isInterventionActive && (
+                      <Area
+                        type="linear"
+                        dataKey="projectedFemale"
+                        name="Projected Post-Intervention (%)"
+                        stroke={TEAL}
+                        fill="none"
+                        strokeWidth={2.5}
+                        strokeDasharray="6 4"
+                        dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 1.5 }}
+                      />
+                    )}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -898,67 +982,148 @@ function Dashboard() {
             <Card
               title={
                 mode === "macro"
-                  ? 'Policy Optimizer — "What If?" Macro Parity Simulator'
-                  : 'Club Diagnostic Sandbox — "What If?" Retention Simulator'
+                  ? 'POLICY OPTIMIZER — "WHAT IF?" MACRO PARITY SIMULATOR'
+                  : 'CLUB DIAGNOSTIC SANDBOX — "WHAT IF?" RETENTION SIMULATOR'
               }
               accent="amber"
             >
               <div className="space-y-4">
-                {(
-                  [
-                    [
-                      mode === "macro"
-                        ? "Regional Prime-Hour Allocation Mandate (18:00–21:00) %"
-                        : "Shift Prime-Time Slots (18:00–21:00) to Girls %",
-                      s1,
-                      setS1,
-                    ],
-                    [
-                      mode === "macro"
-                        ? "Accredited Female Coaching Mentorship Subsidy %"
-                        : "Increase Accredited Female Coaching Staff %",
-                      s2,
-                      setS2,
-                    ],
-                    [
-                      mode === "macro"
-                        ? "Municipal Dark-Kit & Period Supply Mandate %"
-                        : "Puberty & Period Kit/Facility Support %",
-                      s3,
-                      setS3,
-                    ],
-                  ] as const
-                ).map(([l, v, set]) => (
-                  <label key={l} className="block text-xs">
-                    <div className="mb-1 flex justify-between text-[#94A3B8]">
-                      <span>{l}</span>
-                      <span className="kpi font-extrabold text-[#F8FAFC]">{v}%</span>
-                    </div>
-                    <input
-                      type="range" min={0} max={100} value={v}
-                      onChange={(e) => set(+e.target.value)}
-                      className="w-full"
-                      aria-label={l}
-                    />
-                  </label>
-                ))}
-                <div
-                  className="rounded-lg p-3 text-xs"
-                  style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.4)", color: AMBER }}
-                >
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <span>⚠️</span>
-                    <span>Projected Dropout: {sim.projected}% (+{sim.retained} players retained)</span>
-                  </div>
-                  <div className="mt-1 text-xs text-[#F8FAFC]">
-                    Dropout hazard reduces from <span className="kpi font-bold" style={{ color: CORAL }}>{k.dropoutCliff}%</span> down to <span className="kpi font-bold" style={{ color: TEAL }}>{sim.projected}%</span>
-                  </div>
-                  <div className="mt-2 text-xs italic text-[#94A3B8]">
-                    {mode === "macro"
-                      ? "Macro Policy Projection — Modeled on EU elasticity weights across regional cohort"
-                      : "Deterministic simulation modeled on EU elasticity weights — Synthetic Demo Model"}
+                <div className="flex items-center justify-between gap-2 border-b border-[#1E3243] pb-2.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+                    Intervention Levers
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => { setS1(0); setS2(0); setS3(0); }}
+                      className="rounded px-2 py-0.5 text-[10px] font-semibold transition-all border border-[#1E3243] bg-[#0B151E] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#94A3B8]/40"
+                      title="Reset all levers to baseline (0%)"
+                    >
+                      ↺ Reset (0%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setS1(50); setS2(50); setS3(50); }}
+                      className="rounded px-2.5 py-0.5 text-[10px] font-bold transition-all border border-[#2DD4BF]/40 bg-[#2DD4BF]/15 text-[#2DD4BF] hover:bg-[#2DD4BF]/25 shadow-[0_0_10px_rgba(45,212,191,0.2)]"
+                      title="Apply 50/50 parity across scheduling, coaching, and facilities"
+                    >
+                      ⚡ Apply Full Parity (50/50)
+                    </button>
                   </div>
                 </div>
+
+                <ControlledTelemetrySlider
+                  label={
+                    mode === "macro"
+                      ? "Prime-Hour Slot Allocation Mandate (18:00–21:00) %"
+                      : "Shift Prime-Time Slots (18:00–21:00) to Girls %"
+                  }
+                  value={s1}
+                  onChange={setS1}
+                  accentColor={TEAL}
+                />
+                <ControlledTelemetrySlider
+                  label={
+                    mode === "macro"
+                      ? "Female Coaching & Mentorship Ratio %"
+                      : "Increase Accredited Female Coaching Staff %"
+                  }
+                  value={s2}
+                  onChange={setS2}
+                  accentColor={TEAL}
+                />
+                <ControlledTelemetrySlider
+                  label={
+                    mode === "macro"
+                      ? "Dark-Kit & Period-Ready Facility Support %"
+                      : "Puberty & Period Kit/Facility Support %"
+                  }
+                  value={s3}
+                  onChange={setS3}
+                  accentColor={TEAL}
+                />
+
+                <div
+                  className="rounded-lg p-3.5 space-y-3"
+                  style={{
+                    background: "rgba(11,21,30,0.85)",
+                    border: "1px solid rgba(45,212,191,0.35)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.35)",
+                  }}
+                >
+                  <div className="flex items-center justify-between border-b border-[#1E3243] pb-2">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-[#F8FAFC]">
+                      <span className="text-[#2DD4BF]">📈</span>
+                      <span>EXPECTED POST-INTERVENTION IMPACT</span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        sim.retained > 0
+                          ? "bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40"
+                          : "bg-[#1E3243] text-[#94A3B8]"
+                      }`}
+                    >
+                      {sim.retained > 0 ? `+${sim.retained} Retained` : "Baseline (No Levers)"}
+                    </span>
+                  </div>
+
+                  {/* 3-Metric Growth Grid */}
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                    {/* Metric 1: Female Participation Growth */}
+                    <div
+                      className="rounded-md p-2.5"
+                      style={{ background: "#13222F", border: "1px solid rgba(45,212,191,0.25)" }}
+                    >
+                      <span className="text-[10px] font-semibold text-[#94A3B8] block">Female Participation Growth</span>
+                      <div className="kpi mt-1 text-base font-extrabold tabular-nums" style={{ color: TEAL }}>
+                        {sim.shareGain > 0 ? `+${sim.shareGain.toFixed(1)}%` : "+0.0%"}
+                      </div>
+                      <p className="mt-0.5 text-[10px] text-[#94A3B8]">
+                        {sim.currentShare.toFixed(1)}% → {sim.projectedShare.toFixed(1)}% Female Active Share
+                      </p>
+                    </div>
+
+                    {/* Metric 2: Projected Active Female Athletes */}
+                    <div
+                      className="rounded-md p-2.5"
+                      style={{ background: "#13222F", border: "1px solid #1E3243" }}
+                    >
+                      <span className="text-[10px] font-semibold text-[#94A3B8] block">Projected Active Female Athletes</span>
+                      <div className="kpi mt-1 text-base font-extrabold text-[#F8FAFC] tabular-nums">
+                        {sim.projectedActive}
+                      </div>
+                      <p className="mt-0.5 text-[10px] text-[#94A3B8]">
+                        {sim.currentActive} → {sim.projectedActive} (+{sim.retained} retained &amp; newly engaged girls)
+                      </p>
+                    </div>
+
+                    {/* Metric 3: Teen Dropout Hazard Drop */}
+                    <div
+                      className="rounded-md p-2.5"
+                      style={{
+                        background: "#13222F",
+                        border: sim.hazardDrop > 0 ? "1px solid rgba(245,158,11,0.3)" : "1px solid #1E3243",
+                      }}
+                    >
+                      <span className="text-[10px] font-semibold text-[#94A3B8] block">Teen Dropout Hazard Drop</span>
+                      <div
+                        className="kpi mt-1 text-base font-extrabold tabular-nums"
+                        style={{ color: sim.hazardDrop > 0 ? AMBER : "#94A3B8" }}
+                      >
+                        {sim.hazardDrop > 0 ? `−${sim.hazardDrop.toFixed(1)} pp` : "0.0 pp"}
+                      </div>
+                      <p className="mt-0.5 text-[10px] text-[#94A3B8]">
+                        {k.dropoutCliff.toFixed(1)}% → {sim.projected.toFixed(1)}% ({sim.hazardDrop > 0 ? `-${sim.hazardDrop.toFixed(1)} pp reduction` : "Baseline hazard"})
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Transparent methodology disclaimer */}
+                  <p className="text-[10px] italic text-[#94A3B8] leading-tight pt-1">
+                    Hypothetical Policy Elasticity Model — weighted against Eurobarometer 574 (37% time), Women in Sport (78% period/kit), and PMC12330288 (63% female role-model) barrier elasticities.
+                  </p>
+                </div>
+
                 {mode === "macro" && (
                   <button
                     type="button"

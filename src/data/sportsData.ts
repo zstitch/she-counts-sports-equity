@@ -437,8 +437,26 @@ export function computeKpis(id: ClubId = "bih") {
 
 export type Kpis = ReturnType<typeof computeKpis>;
 
+export interface SimulationResult {
+  projected: number;
+  retained: number;
+  reduction: number;
+  currentActive: number;
+  projectedActive: number;
+  currentShare: number;
+  projectedShare: number;
+  shareGain: number;
+  hazardDrop: number;
+  projectedAges: Array<Kpis["ages"][number] & { projectedFemale: number }>;
+}
+
 /** What-if model: each lever reduces hazard by weighted, diminishing elasticity. */
-export function simulate(k: Kpis, primeShift: number, coachInc: number, pubertySupport: number) {
+export function simulate(
+  k: Kpis,
+  primeShift: number,
+  coachInc: number,
+  pubertySupport: number
+): SimulationResult {
   // Elasticities modeled on Eurobarometer 574 (time barrier: 40%), PMC12330288 (period: 78%), ICOACHKIDS+ coach gap (63%)
   const reduction =
     1 -
@@ -446,8 +464,48 @@ export function simulate(k: Kpis, primeShift: number, coachInc: number, pubertyS
     (1 - 0.0028 * coachInc) *
     (1 - 0.0024 * pubertySupport);
   const projected = Math.max(0, Math.round(k.dropoutCliff * (1 - reduction) * 10) / 10);
-  const retained = Math.round(((k.dropoutCliff - projected) / 100) * k.u14fr);
-  return { projected, retained, reduction: Math.round(reduction * 1000) / 10 };
+  const pool = k.teenFR > 0 ? k.teenFR : (k.totalFR > 0 ? k.totalFR : 250);
+  const retained = Math.round(((k.dropoutCliff - projected) / 100) * pool);
+
+  const currentActive = k.totalFA;
+  const projectedActive = currentActive + retained;
+  const totalMaleActive = k.totalMA;
+  const currentShare = k.femaleActiveShare;
+  const totalActivePost = projectedActive + totalMaleActive;
+  const projectedShare =
+    totalActivePost > 0
+      ? +( (projectedActive / totalActivePost) * 100 ).toFixed(1)
+      : currentShare;
+  const shareGain = +(projectedShare - currentShare).toFixed(1);
+  const hazardDrop = +(k.dropoutCliff - projected).toFixed(1);
+
+  const u12Female = k.ages[0]?.female ?? 50;
+  const projectedAges = k.ages.map((a) => {
+    if (a.age === "U12" || reduction === 0) {
+      return { ...a, projectedFemale: a.female };
+    }
+    const dropFromU12 = Math.max(0, u12Female - a.female);
+    const gapToMale = Math.max(0, a.male - a.female);
+    const recovery = dropFromU12 * reduction * 0.75 + gapToMale * reduction * 0.25;
+    const projectedFemale = Math.min(
+      Math.max(a.male, a.female),
+      Math.round((a.female + recovery) * 10) / 10
+    );
+    return { ...a, projectedFemale };
+  });
+
+  return {
+    projected,
+    retained,
+    reduction: Math.round(reduction * 1000) / 10,
+    currentActive,
+    projectedActive,
+    currentShare,
+    projectedShare,
+    shareGain,
+    hazardDrop,
+    projectedAges,
+  };
 }
 
 /** Deterministic 90-day action plan — tailored for macro policy or club sandbox */

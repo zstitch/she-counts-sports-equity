@@ -175,4 +175,39 @@ Handball,Uni19+,20,8,35,25,40,30,50,40`;
     expect(res.rows.length).toBe(5);
     expect(res.label).toBe("Handball (Custom Uploaded Club CSV)");
   });
+
+  it("calculates expected female growth metrics and projected cohort retention curve", () => {
+    const k = computeKpis("bih");
+    const baseline = simulate(k, 0, 0, 0);
+
+    expect(baseline.projected).toBe(k.dropoutCliff);
+    expect(baseline.retained).toBe(0);
+    expect(baseline.shareGain).toBe(0);
+    expect(baseline.hazardDrop).toBe(0);
+    expect(baseline.currentActive).toBe(k.totalFA);
+    expect(baseline.projectedActive).toBe(k.totalFA);
+
+    for (let i = 0; i < k.ages.length; i++) {
+      expect(baseline.projectedAges[i]!.projectedFemale).toBe(k.ages[i]!.female);
+    }
+
+    // Apply 50/50 full parity simulation
+    const parity = simulate(k, 50, 50, 50);
+
+    expect(parity.hazardDrop).toBeGreaterThan(10); // e.g. -12.8 pp drop
+    expect(parity.projected).toBeLessThan(k.dropoutCliff);
+    expect(parity.retained).toBeGreaterThan(0);
+    expect(parity.projectedActive).toBe(k.totalFA + parity.retained);
+    expect(parity.shareGain).toBeGreaterThan(0);
+    expect(parity.projectedShare).toBeGreaterThan(parity.currentShare);
+
+    // Verify adolescent cohorts (U14, U16, U18) lift upward on post-intervention curve
+    const u14Base = k.ages.find((a) => a.age === "U14")!.female;
+    const u14Proj = parity.projectedAges.find((a) => a.age === "U14")!.projectedFemale;
+    expect(u14Proj).toBeGreaterThan(u14Base);
+
+    const u18Base = k.ages.find((a) => a.age === "U18")!.female;
+    const u18Proj = parity.projectedAges.find((a) => a.age === "U18")!.projectedFemale;
+    expect(u18Proj).toBeGreaterThan(u18Base);
+  });
 });
