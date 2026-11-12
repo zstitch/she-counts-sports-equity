@@ -257,6 +257,19 @@ input[type="range"]::-moz-range-thumb {
 /* Button micro-interaction (taste-skill rule 5) */
 button:not(:disabled):active { transform: translateY(1px); }
 
+/* Invisible Scrollbars across all modals and scroll areas */
+.no-scrollbar,
+[class*="overflow-y-auto"] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.no-scrollbar::-webkit-scrollbar,
+[class*="overflow-y-auto"]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 /* Card hover lift */
 .card-lift {
   transition: transform 0.15s ease, box-shadow 0.15s ease;

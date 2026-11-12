@@ -200,24 +200,30 @@ function Modal({ open, onClose, title, wide, children }: {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(8,10,18,0.88)", backdropFilter: "blur(10px)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8"
+      style={{
+        background: "rgba(8,10,18,0.85)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+      }}
       onClick={onClose}
     >
       <div
-        className={`max-h-[88vh] w-full overflow-y-auto rounded-xl p-6 ${wide ? "max-w-3xl" : "max-w-2xl"}`}
+        className={`max-h-[92vh] w-full overflow-y-auto rounded-2xl p-6 md:p-8 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+          wide ? "max-w-4xl lg:max-w-5xl xl:max-w-6xl" : "max-w-2xl"
+        }`}
         style={{
           background: "#111526",
           border: "1px solid #262D4D",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.9), inset 0 1px 0 0 rgba(255,255,255,0.06)",
+          boxShadow: "0 24px 90px rgba(0,0,0,0.95), inset 0 1px 0 0 rgba(255,255,255,0.06)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
-          <h3 className="text-lg font-bold text-white">{title}</h3>
+          <h3 className="text-xl md:text-2xl font-bold text-white">{title}</h3>
           <button
             onClick={onClose}
-            className="rounded-md px-2 py-1 text-sm transition-colors text-[#64748B] hover:text-[#F8FAFC]"
+            className="rounded-lg p-1.5 text-base transition-colors text-[#64748B] hover:bg-white/5 hover:text-[#F8FAFC]"
             aria-label="Close"
           >✕</button>
         </div>
@@ -793,6 +799,26 @@ function Dashboard() {
                   ✕ Clear
                 </button>
               )}
+
+              {/* Gemini AI Analyst Button (Rightmost in Actions Section) */}
+              <button
+                onClick={runAnalysis}
+                disabled={loading}
+                className="rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all disabled:opacity-60 bg-[#C084FC] hover:bg-[#A855F7] text-[#080A12] shadow-[0_0_16px_rgba(192,132,252,0.4)] flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                title="Generate 90-Day Policy Roadmap via Gemini AI"
+              >
+                {loading ? (
+                  <>
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#080A12] border-t-transparent" />
+                    <span>Analysing…</span>
+                  </>
+                ) : (
+                  <>
+                    <span>✨</span>
+                    <span>{mode === "macro" ? "Generate 90-Day Policy Roadmap (AI Analyst)" : "Generate 90-Day Club Plan (AI Analyst)"}</span>
+                  </>
+                )}
+              </button>
 
               {/* Far Right Event Tag */}
               <div className="flex items-center gap-2 pl-2 border-l border-[#262D4D]">
