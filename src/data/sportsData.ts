@@ -165,6 +165,15 @@ export function computeKpis(id: ClubId) {
   const primeSlotAvg = avg(c, (x) => x.primeSlotPct);
   const primeMaleSkew = primeSlotAvg === 0 ? 0 : +((100 - primeSlotAvg) / primeSlotAvg).toFixed(2);
 
+  // Mon–Fri 18:00–21:00 weekday prime-hour allocation
+  const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
+  const days = weekdays.map((day, idx) => {
+    const dayFactor = [0.95, 1.1, 1.0, 1.15, 0.8][idx]!;
+    const fHours = Math.round((3 * (primeSlotAvg / 100) * dayFactor) * 10) / 10;
+    const mHours = Math.round((3 * ((100 - primeSlotAvg) / 100) * dayFactor) * 10) / 10;
+    return { day, female: fHours, male: mHours };
+  });
+
   // Female coaching & puberty readiness
   const femaleCoachAvg = avg(c, (x) => x.femaleCoachPct);
   const pubertySupportAvg = avg(c, (x) => x.pubertySupportScore);
@@ -193,6 +202,7 @@ export function computeKpis(id: ClubId) {
     u18fa: u18.fa, u18fr: u18.fr,
     primeSlotAvg,
     primeMaleSkew,
+    days,
     femaleCoachAvg,
     pubertySupportAvg,
     feeSubsidyAvg,

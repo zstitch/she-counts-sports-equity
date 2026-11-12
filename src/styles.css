@@ -1,7 +1,15 @@
 /*
- * Tailwind v4 entry — SHE COUNTS: Broadcast Sports-Telemetry Obsidian theme
+ * Tailwind v4 entry — SHE COUNTS: High-Contrast Dark Sports-Telemetry Theme
  * taste-skill compliant: tabular-nums, specular border insets, zero generic gradients,
- * zero low-contrast text on dark surfaces.
+ * zero low-contrast text on dark surfaces. Zero purple / monochrome tones.
+ * Token system:
+ *   Canvas:        #0B151E
+ *   Card surface:  #13222F  border #1E3243
+ *   Primary text:  #F8FAFC
+ *   Muted text:    #94A3B8
+ *   Teal (female): #2DD4BF
+ *   Coral (male):  #FB7185
+ *   Amber (cliff): #F59E0B
  */
 @import "tailwindcss" source(none);
 @source "../src";
@@ -58,64 +66,64 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ── Broadcast Sports-Telemetry Obsidian Design Tokens ── */
+/* ── High-Contrast Dark Sports-Telemetry Design Tokens ── */
 :root {
   --radius: 0.75rem;
 
-  /* Canvas & Surfaces */
-  --background: oklch(0.08 0.018 240);       /* #070B14 Deep Obsidian */
-  --foreground: oklch(1 0 0);                 /* #FFFFFF */
-  --card: oklch(0.145 0.025 240);             /* #0F172A Elevated Bento */
-  --card-foreground: oklch(1 0 0);
-  --popover: oklch(0.145 0.025 240);
-  --popover-foreground: oklch(1 0 0);
+  /* Canvas & Surfaces — exact hex specification */
+  --background: #0B151E;                      /* Page canvas */
+  --foreground: #F8FAFC;                      /* Primary headings & hero KPI numbers */
+  --card: #13222F;                            /* Elevated bento card surface */
+  --card-foreground: #F8FAFC;
+  --popover: #13222F;
+  --popover-foreground: #F8FAFC;
 
-  /* Semantic accent tokens (taste-skill) */
-  --teal:  #2DD4BF;   /* Female / Parity / Positive */
-  --coral: #FB7185;   /* Dropout hazard / Disparity */
-  --amber: #FBBF24;   /* Warning / Root-cause */
+  /* Semantic data colors — strict 3-color telemetry system */
+  --teal:  #2DD4BF;   /* A. Electric Cyan — Female Active & Target Parity */
+  --coral: #FB7185;   /* B. Sunset Coral  — Male Baseline, Disparity & Dropout Hazard */
+  --amber: #F59E0B;   /* C. Warm Amber    — Dropout Cliff & Optimizer Projection */
 
   /* Primary = Teal */
-  --primary: oklch(0.78 0.13 182);            /* #2DD4BF approx */
-  --primary-foreground: oklch(0.08 0.018 240);
+  --primary: #2DD4BF;
+  --primary-foreground: #0B151E;
 
-  /* Secondary surface = hover card */
-  --secondary: oklch(0.21 0.03 240);          /* #1E293B */
-  --secondary-foreground: oklch(0.9 0.012 247);
+  /* Secondary surface = interactive hover */
+  --secondary: #1E3243;
+  --secondary-foreground: #F8FAFC;
 
   /* Muted */
-  --muted: oklch(0.21 0.03 240);
-  --muted-foreground: oklch(0.60 0.025 256);  /* #94A3B8 */
+  --muted: #1E3243;
+  --muted-foreground: #94A3B8;               /* Secondary / muted labels */
 
   /* Accent = Coral */
-  --accent: oklch(0.72 0.19 15);             /* #FB7185 approx */
-  --accent-foreground: oklch(0.08 0.018 240);
+  --accent: #FB7185;
+  --accent-foreground: #0B151E;
 
   /* Warning = Amber */
-  --warning: oklch(0.80 0.165 75);           /* #FBBF24 approx */
+  --warning: #F59E0B;
 
-  --destructive: oklch(0.72 0.19 15);
-  --destructive-foreground: oklch(1 0 0);
+  --destructive: #FB7185;
+  --destructive-foreground: #F8FAFC;
 
-  /* Borders: subtle specular */
-  --border: rgba(148, 163, 184, 0.16);
-  --input: rgba(148, 163, 184, 0.16);
-  --ring: oklch(0.78 0.13 182);
+  /* Borders: card & table grid lines */
+  --border: #1E3243;
+  --input: #1E3243;
+  --ring: #2DD4BF;
 
-  --chart-1: oklch(0.78 0.13 182);
-  --chart-2: oklch(0.72 0.19 15);
-  --chart-3: oklch(0.80 0.165 75);
+  --chart-1: #2DD4BF;
+  --chart-2: #FB7185;
+  --chart-3: #F59E0B;
   --chart-4: oklch(0.646 0.222 41);
   --chart-5: oklch(0.6 0.118 184);
 
-  --sidebar: oklch(0.145 0.025 240);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: oklch(0.78 0.13 182);
-  --sidebar-primary-foreground: oklch(0.08 0.018 240);
-  --sidebar-accent: oklch(0.21 0.03 240);
-  --sidebar-accent-foreground: oklch(0.9 0.012 247);
-  --sidebar-border: rgba(148, 163, 184, 0.16);
-  --sidebar-ring: oklch(0.78 0.13 182);
+  --sidebar: #13222F;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #2DD4BF;
+  --sidebar-primary-foreground: #0B151E;
+  --sidebar-accent: #1E3243;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #1E3243;
+  --sidebar-ring: #2DD4BF;
 }
 
 @layer base {
@@ -144,41 +152,79 @@
 
 /* Bento card: elevated surface with top specular border inset */
 @utility bento-card {
-  background: var(--card);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: #13222F;
+  border: 1px solid #1E3243;
   box-shadow:
-    0 10px 30px -10px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    0 8px 30px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-xl);
 }
 
 /* Hover bento card */
 @utility bento-hover {
-  background: oklch(0.21 0.03 240);
+  background: #1E3243;
   border-color: rgba(45, 212, 191, 0.35);
   box-shadow:
-    0 16px 40px -12px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+    0 16px 40px -12px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.09);
   transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 /* Semantic badge fills */
 @utility badge-teal  { background: rgba(45, 212, 191, 0.15); color: #2DD4BF; border: 1px solid rgba(45, 212, 191, 0.35); }
 @utility badge-coral { background: rgba(251, 113, 133, 0.15); color: #FB7185; border: 1px solid rgba(251, 113, 133, 0.35); }
-@utility badge-amber { background: rgba(251, 191, 36, 0.15);  color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.35); }
+@utility badge-amber { background: rgba(245, 158, 11, 0.15);  color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.35); }
 
 /* Secondary body text */
 @utility text-body { color: oklch(0.89 0.008 247); }   /* #E2E8F0 */
 @utility text-aux  { color: oklch(0.60 0.025 256); }   /* #94A3B8 */
 
-input[type="range"] { accent-color: var(--warning); }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #1E3243;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  accent-color: #2DD4BF;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #1E3243;
+  height: 6px;
+  border-radius: 9999px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2DD4BF;
+  cursor: pointer;
+  margin-top: -5px;
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.55);
+}
+input[type="range"]::-moz-range-track {
+  background: #1E3243;
+  height: 6px;
+  border-radius: 9999px;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2DD4BF;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.55);
+}
 
 /* Recharts tooltip override */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: rgba(7, 11, 20, 0.95) !important;
-  border: 1px solid oklch(0.32 0.04 245) !important;
+  background: rgba(11, 21, 30, 0.97) !important;
+  border: 1px solid #1E3243 !important;
   border-radius: 8px !important;
-  color: #fff !important;
+  color: #F8FAFC !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
   backdrop-filter: blur(12px) !important;
 }
