@@ -107,20 +107,23 @@ export function simulate(k: Kpis, primeShift: number, coachInc: number, parity: 
 
 export function interventionPlan(k: Kpis, label: string) {
   return {
-    title: `90-Day Intervention Plan — ${label}`,
-    phases: [
-      { range: "Days 1–30 · Diagnose & Protect", actions: [
+    title: `90-Day Club Intervention Plan — ${label}`,
+    cards: [
+      { title: "30-Day Quick Wins", actions: [
         `Contact all ${k.teenReg - k.teenAct} lapsed girls in U16–U18 (of ${k.teenReg} registered) with a short exit survey.`,
         `Reserve at least 2 prime-time slots/week for girls (current ratio ${k.primeRatio}x male).`,
-      ]},
-      { range: "Days 31–60 · Rebalance", actions: [
+      ], kpis: [{ metric: "Prime-hour ratio (M:F)", target: `≤ ${Math.max(1, +(k.primeRatio - 0.3).toFixed(2))}x (now ${k.primeRatio}x)` }] },
+      { title: "60-Day Structural Shifts", actions: [
         `Recruit ${Math.max(1, Math.ceil(k.totalCoaches * 0.4) - k.femaleCoaches)} female assistant coaches (now ${k.femaleCoaches}/${k.totalCoaches}).`,
         `Launch a ${k.worstAge.age} bridge squad targeting the ${k.worstAge.gap}-pt retention gap.`,
-      ]},
-      { range: "Days 61–90 · Measure", actions: [
-        `Re-measure prime-hour share; target female share ≥ ${Math.min(50, k.femaleShare + 10)}% (now ${k.femaleShare}%).`,
-        `Publish an anonymized progress report for ${k.sportRep?.club ?? "clubs"}.`,
-      ]},
+      ], kpis: [{ metric: "Female coach share", target: `≥ ${Math.min(50, k.coachShare + 10)}% (now ${k.coachShare}%)` }] },
+      { title: "90-Day Retention Audit", actions: [
+        `Re-measure prime-hour share and teen retention for ${k.sportRep?.club ?? "clubs"}.`,
+        `Publish an anonymized progress report.`,
+      ], kpis: [
+        { metric: "Female participation share", target: `≥ ${Math.min(50, k.femaleShare + 10)}% (now ${k.femaleShare}%)` },
+        { metric: "Active dropout risk", target: `≤ ${Math.max(0, k.dropoutRisk - 5)}% (now ${k.dropoutRisk}%)` },
+      ] },
     ],
   };
 }
