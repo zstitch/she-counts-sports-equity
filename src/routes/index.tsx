@@ -120,6 +120,7 @@ function Dashboard() {
                   <input type="range" min={0} max={100} value={v} onChange={(e) => set(+e.target.value)} className="w-full" /></label>
               ))}
               <div className="rounded-md border border-warning/50 bg-warning/10 p-3 text-xs text-warning">⚠️ Optimized Projection: Drop-out hazard reduces to <b className="kpi">{sim.projected}%</b> (Potential impact: <b className="kpi">+{sim.retained}</b> players retained annually — Hypothetical scenario)</div>
+              {s2 > 35 && <div className="mt-3 rounded-md border border-primary/60 bg-primary/10 p-3 text-xs text-primary"><b>★ Injury-to-Coach Retention Pathway</b><p className="mt-1 text-foreground">Transition injured U16–U18 female players into certified youth assistant coaches. Projected impact: <b className="kpi text-primary">+19%</b> U10–U14 girl retention (hypothetical).</p></div>}
             </Card>
           </div>
         </div>

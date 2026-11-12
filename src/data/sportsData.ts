@@ -1,5 +1,5 @@
 // Synthetic, anonymized club datasets (zero PII). All KPIs computed below.
-export type ClubId = "all" | "sarajevo-fc" | "bosna-bb" | "ilidza-vb";
+export type ClubId = "all" | "sarajevo-fc" | "bosna-bb" | "ilidza-vb" | "centar-tennis";
 export const AGE_GROUPS = ["U10", "U12", "U14", "U16", "U18", "Senior"] as const;
 export type AgeGroup = (typeof AGE_GROUPS)[number];
 
@@ -8,6 +8,7 @@ export const clubs: Club[] = [
   { id: "sarajevo-fc", name: "Sarajevo Youth FC", sport: "Football" },
   { id: "bosna-bb", name: "Bosna Youth", sport: "Basketball" },
   { id: "ilidza-vb", name: "Ilidža Club", sport: "Volleyball" },
+  { id: "centar-tennis", name: "Centar Tennis Academy", sport: "Youth Tennis" },
 ];
 export const viewOptions: { id: ClubId; label: string }[] = [
   { id: "all", label: "All Grassroots Clubs" },
@@ -20,6 +21,8 @@ export const cohort: CohortRow[] = [
   ...row("sarajevo-fc", [[60, 52, 140, 130], [55, 39, 135, 121], [48, 23, 130, 111], [40, 12, 120, 98], [34, 9, 110, 85], [30, 7, 100, 73]]),
   ...row("bosna-bb", [[50, 45, 70, 64], [46, 35, 68, 61], [42, 23, 66, 56], [38, 14, 62, 51], [32, 10, 58, 46], [28, 8, 52, 39]]),
   ...row("ilidza-vb", [[70, 62, 40, 37], [66, 51, 38, 34], [60, 33, 36, 31], [52, 19, 34, 28], [44, 13, 30, 23], [38, 10, 28, 21]]),
+  // Winter indoor-court squeeze + individual-sport injury dropout, spiking at U16
+  ...row("centar-tennis", [[40, 36, 50, 46], [44, 34, 48, 42], [42, 28, 46, 38], [36, 13, 42, 33], [34, 15, 36, 26], [28, 12, 32, 22]]),
 ];
 function row(clubId: Club["id"], v: number[][]): CohortRow[] {
   return v.map(([fr, fa, mr, ma], i) => ({ clubId, age: AGE_GROUPS[i]!, femaleRegistered: fr!, femaleActive: fa!, maleRegistered: mr!, maleActive: ma! }));
@@ -30,6 +33,7 @@ export const participation = [
   { clubId: "sarajevo-fc", femaleHours: 14, maleHours: 38 },
   { clubId: "bosna-bb", femaleHours: 12, maleHours: 22 },
   { clubId: "ilidza-vb", femaleHours: 20, maleHours: 14 },
+  { clubId: "centar-tennis", femaleHours: 12, maleHours: 23 },
 ] as const;
 
 // primeHours: Mon–Fri 18:00–21:00 slot-hours per day
@@ -38,6 +42,7 @@ export const primeHours: { clubId: Club["id"]; day: (typeof days)[number]; femal
   ...days.map((day, i) => ({ clubId: "sarajevo-fc" as const, day, female: [1, 1, 0.5, 1, 0.5][i]!, male: [2, 2, 2.5, 2, 2.5][i]! })),
   ...days.map((day, i) => ({ clubId: "bosna-bb" as const, day, female: [1, 1.5, 1, 1, 1][i]!, male: [2, 1.5, 2, 2, 2][i]! })),
   ...days.map((day, i) => ({ clubId: "ilidza-vb" as const, day, female: [1.5, 1.5, 2, 1.5, 1][i]!, male: [1.5, 1.5, 1, 1.5, 2][i]! })),
+  ...days.map((day) => ({ clubId: "centar-tennis" as const, day, female: 1, male: 2 })),
 ];
 
 // coaching: licensed coaches by gender
@@ -45,6 +50,7 @@ export const coaching = [
   { clubId: "sarajevo-fc", femaleCoaches: 1, maleCoaches: 11 },
   { clubId: "bosna-bb", femaleCoaches: 2, maleCoaches: 6 },
   { clubId: "ilidza-vb", femaleCoaches: 3, maleCoaches: 4 },
+  { clubId: "centar-tennis", femaleCoaches: 2, maleCoaches: 7 },
 ] as const;
 
 const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
