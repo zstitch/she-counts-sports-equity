@@ -638,15 +638,26 @@ function Dashboard() {
 
         {/* ── Top Control Strip & Single-Row Header Bar ── */}
         <header
-          className="rounded-xl p-5"
+          className="relative rounded-xl p-5"
           style={{
             background: "#111526",
             border: "1px solid #262D4D",
             boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
           }}
         >
+          {/* ── Absolute Top-Right Corner Event Tag (Sarajevo Hackathon · Erasmus+ Track 04) ── */}
+          <div className="absolute top-3 right-4 sm:top-3.5 sm:right-5 flex items-center gap-2 z-20">
+            <div className="text-right leading-none">
+              <span className="block text-[11px] font-extrabold tracking-wider text-[#F8FAFC]">SARAJEVO</span>
+              <span className="block text-[8px] font-mono text-[#64748B]">HACKATHON 2026</span>
+            </div>
+            <span className="rounded-full px-2.5 py-1 text-[9px] font-bold tracking-wider font-mono bg-[#171C33] border border-[#262D4D] text-[#C084FC] whitespace-nowrap shadow-sm">
+              ERASMUS+ · TRACK 04
+            </span>
+          </div>
+
           {/* ── Top Control Strip (Full-Width Bar above Header) ── */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#262D4D] pb-3.5 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#262D4D] pb-3.5 mb-4 pr-44 sm:pr-52">
             {/* Left: View Mode Toggle */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] mr-1">VIEW MODE:</span>
@@ -685,7 +696,7 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* Middle: Simulation State (Before vs. After) */}
+            {/* Middle/Right: Simulation State (Before vs. After) */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] hidden sm:inline mr-1">SIMULATION STATE:</span>
               <div className="flex items-center rounded-full bg-[#171C33] border border-[#262D4D] p-1">
@@ -721,17 +732,6 @@ function Dashboard() {
                   </span>
                 </button>
               </div>
-            </div>
-
-            {/* Far Right: Sarajevo Hackathon Event Tag (Always on Top Right) */}
-            <div className="flex items-center gap-2 pl-3 border-l border-[#262D4D]">
-              <div className="text-right leading-none">
-                <span className="block text-[11px] font-extrabold tracking-wider text-[#F8FAFC]">SARAJEVO</span>
-                <span className="block text-[8px] font-mono text-[#64748B]">HACKATHON 2026</span>
-              </div>
-              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wider font-mono bg-[#171C33] border border-[#262D4D] text-[#C084FC] whitespace-nowrap">
-                ERASMUS+ · TRACK 04
-              </span>
             </div>
           </div>
 
