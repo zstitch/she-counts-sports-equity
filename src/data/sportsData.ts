@@ -22,7 +22,7 @@ export const cohort: CohortRow[] = [
   ...row("ilidza-vb", [[70, 62, 40, 37], [66, 51, 38, 34], [60, 33, 36, 31], [52, 19, 34, 28], [44, 13, 30, 23], [38, 10, 28, 21]]),
 ];
 function row(clubId: Club["id"], v: number[][]): CohortRow[] {
-  return v.map(([fr, fa, mr, ma], i) => ({ clubId, age: AGE_GROUPS[i], femaleRegistered: fr, femaleActive: fa, maleRegistered: mr, maleActive: ma }));
+  return v.map(([fr, fa, mr, ma], i) => ({ clubId, age: AGE_GROUPS[i]!, femaleRegistered: fr!, femaleActive: fa!, maleRegistered: mr!, maleActive: ma! }));
 }
 
 // participation: weekly session-hours booked, all slots
@@ -35,9 +35,9 @@ export const participation = [
 // primeHours: Mon–Fri 18:00–21:00 slot-hours per day
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
 export const primeHours: { clubId: Club["id"]; day: (typeof days)[number]; female: number; male: number }[] = [
-  ...days.map((day, i) => ({ clubId: "sarajevo-fc" as const, day, female: [1, 1, 0.5, 1, 0.5][i], male: [2, 2, 2.5, 2, 2.5][i] })),
-  ...days.map((day, i) => ({ clubId: "bosna-bb" as const, day, female: [1, 1.5, 1, 1, 1][i], male: [2, 1.5, 2, 2, 2][i] })),
-  ...days.map((day, i) => ({ clubId: "ilidza-vb" as const, day, female: [1.5, 1.5, 2, 1.5, 1][i], male: [1.5, 1.5, 1, 1.5, 2][i] })),
+  ...days.map((day, i) => ({ clubId: "sarajevo-fc" as const, day, female: [1, 1, 0.5, 1, 0.5][i]!, male: [2, 2, 2.5, 2, 2.5][i]! })),
+  ...days.map((day, i) => ({ clubId: "bosna-bb" as const, day, female: [1, 1.5, 1, 1, 1][i]!, male: [2, 1.5, 2, 2, 2][i]! })),
+  ...days.map((day, i) => ({ clubId: "ilidza-vb" as const, day, female: [1.5, 1.5, 2, 1.5, 1][i]!, male: [1.5, 1.5, 1, 1.5, 2][i]! })),
 ];
 
 // coaching: licensed coaches by gender
