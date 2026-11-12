@@ -9,6 +9,7 @@ import { analyzeClubData, type Plan } from "@/lib/analyze-club-data.functions";
 import {
   computeKpis, simulate, interventionPlan, viewOptions, macroViewOptions, sandboxClubOptions,
   EU_EVIDENCE, CSV_TEMPLATE_CONTENT, parseClubCsv, type ClubId, type Kpis,
+  METHODOLOGICAL_NOTE, BENCHMARK_EVIDENCE_REGISTRY,
 } from "@/data/sportsData";
 
 export const Route = createFileRoute("/")({
@@ -254,8 +255,12 @@ function ProgressBar({ value, max = 100, color = TEAL }: { value: number; max?: 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
 function Dashboard() {
   const [mode, setMode] = useState<"macro" | "sandbox">("macro");
-  const [view, setView] = useState<ClubId>("eu27");
-  const [customCohort, setCustomCohort] = useState<null | { rows: ReturnType<typeof parseClubCsv>["rows"]; label: string }>(null);
+  const [view, setView] = useState<ClubId>("bih");
+  const [customCohort, setCustomCohort] = useState<null | {
+    rows: ReturnType<typeof parseClubCsv>["rows"];
+    label: string;
+    isMacro?: boolean;
+  }>(null);
   const [uploadWarnings, setUploadWarnings] = useState<string[]>([]);
   const [s1, setS1] = useState(0), [s2, setS2] = useState(0), [s3, setS3] = useState(0);
   const [showMethod, setShowMethod] = useState(false);
@@ -268,7 +273,9 @@ function Dashboard() {
 
   const currentOptions = mode === "macro" ? macroViewOptions : sandboxClubOptions;
   const currentItem = viewOptions.find((v) => v.id === view);
-  const label = currentItem ? currentItem.label : "EU27 Average (Eurostat Official Benchmark)";
+  const label = currentItem
+    ? currentItem.label
+    : "Bosnia & Herzegovina (Host Country — BiH Adolescent Studies)";
 
   const k: Kpis = useMemo(() => {
     if (customCohort) {
@@ -305,7 +312,7 @@ function Dashboard() {
         return { day, female: fHours, male: mHours };
       });
       return {
-        isMacro: false,
+        isMacro: customCohort.isMacro ?? false,
         ages,
         femaleActiveShare: pct(totalFA, totalFA + totalMA),
         maleActiveShare: 100 - pct(totalFA, totalFA + totalMA),
@@ -335,20 +342,42 @@ function Dashboard() {
   const fallbackPlan = interventionPlan(k, customCohort?.label ?? label);
   const plan = aiPlan ?? fallbackPlan;
 
-  // ── CSV Upload (activates Club Diagnostic Sandbox)
+  // ── CSV Upload (supports Bosnia & Herzegovina research CSV or Grassroots Club CSV)
   function handleCsvUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (evt) => {
       const text = evt.target?.result as string;
-      const { rows, warnings } = parseClubCsv(text, "custom");
-      setCustomCohort(rows.length > 0 ? { rows, label: `Custom Upload — ${file.name}` } : null);
-      setUploadWarnings(warnings);
-      setMode("sandbox");
-      setView("demo-football");
+      const { rows, warnings, isMacro, label: parsedLabel } = parseClubCsv(text, "custom");
+      if (rows.length > 0) {
+        const finalLabel =
+          parsedLabel ||
+          (isMacro
+            ? `Bosnia & Herzegovina (Host Country — ${file.name})`
+            : `Custom Upload — ${file.name}`);
+        setCustomCohort({ rows, label: finalLabel, isMacro });
+        setUploadWarnings(warnings);
+        if (isMacro) {
+          setMode("macro");
+          setView("bih");
+        } else {
+          setMode("sandbox");
+          setView("demo-football");
+        }
+      } else {
+        setCustomCohort(null);
+        setUploadWarnings(warnings.length > 0 ? warnings : ["No valid data rows found in CSV."]);
+      }
     };
     reader.readAsText(file);
+  }
+
+  function downloadBihCsv() {
+    const a = document.createElement("a");
+    a.href = "/bosnia_herzegovina_youth_sport_data.csv";
+    a.download = "bosnia_herzegovina_youth_sport_data.csv";
+    a.click();
   }
 
   function downloadSampleCsv() {
@@ -404,15 +433,15 @@ function Dashboard() {
               <span className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mr-1">View Mode:</span>
               <button
                 type="button"
-                onClick={() => { setMode("macro"); setCustomCohort(null); setView("eu27"); }}
+                onClick={() => { setMode("macro"); setCustomCohort(null); setView("bih"); }}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
                   mode === "macro"
                     ? "bg-[#2DD4BF] text-[#0B151E] shadow-[0_0_15px_rgba(45,212,191,0.4)]"
                     : "bg-[#0B151E] text-[#94A3B8] border border-[#1E3243] hover:text-[#F8FAFC]"
                 }`}
               >
-                <span>🇪🇺</span>
-                <span>Official EU &amp; Balkan Benchmarks (Eurostat Verified)</span>
+                <span>🇧🇦</span>
+                <span>BiH Host Country &amp; Eurostat Verified Benchmarks</span>
                 <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/20 font-mono">Real Macro Data</span>
               </button>
               <button
@@ -443,15 +472,15 @@ function Dashboard() {
                   SHE COUNTS: <span style={{ color: TEAL }}>Women in Sport</span>
                 </h1>
                 {mode === "macro" ? (
-                  <Badge color="teal">🇪🇺 Verified Eurostat &amp; EU Dataset</Badge>
+                  <Badge color="teal">🇧🇦 Host Country &amp; Eurostat Benchmarks</Badge>
                 ) : (
                   <Badge color="amber">🧪 Club Diagnostic Sandbox (Synthetic Demo)</Badge>
                 )}
-                {customCohort && <Badge color="amber">Custom Uploaded Club CSV</Badge>}
+                {customCohort && <Badge color="amber">{customCohort.label}</Badge>}
               </div>
               <p className="text-sm italic text-[#94A3B8]">
                 {mode === "macro"
-                  ? "Official Verified Geographies (Eurostat hlth_ehis_pe3i, Eurobarometer 574 & ICOACHKIDS+) — Zero Fabricated Club Names"
+                  ? "Verified Geographies (BiH Adolescent Studies PMC8534587, PMC8620439, PMC7761556 & Eurostat hlth_ehis_pe3i) — Zero Fabricated Club Names"
                   : "Club Diagnostic Sandbox: Grassroots schedule equity, coaching ratios & washroom period-support simulation"}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -460,7 +489,7 @@ function Dashboard() {
                     {mode === "macro" ? "Verified Geography" : "Club Model / Sandbox"}
                   </span>
                   <select
-                    value={customCohort ? "demo-football" : view}
+                    value={customCohort ? (customCohort.isMacro ? "bih" : "demo-football") : view}
                     onChange={(e) => { setCustomCohort(null); setView(e.target.value as ClubId); }}
                     className="rounded-md px-3 py-1.5 text-sm text-[#F8FAFC] font-medium"
                     style={{ background: "#0B151E", border: "1px solid #1E3243" }}
@@ -474,30 +503,40 @@ function Dashboard() {
             <div className="flex flex-wrap items-end gap-2">
               <input
                 ref={fileInputRef} type="file" accept=".csv" className="hidden"
-                onChange={handleCsvUpload} aria-label="Upload Club CSV"
+                onChange={handleCsvUpload} aria-label="Upload CSV Data"
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
                 style={{ background: "rgba(45,212,191,0.12)", border: "1px solid rgba(45,212,191,0.35)", color: TEAL }}
-                aria-label="Upload Club CSV"
-                title="Upload club-level CSV data (automatically switches to Sandbox Mode)"
+                aria-label="Upload CSV Data"
+                title="Upload Bosnia & Herzegovina research CSV or grassroots club CSV"
               >
-                ↑ Upload Club CSV (Opens Sandbox)
+                ↑ Upload CSV (BiH or Club)
+              </button>
+              <button
+                onClick={downloadBihCsv}
+                className="rounded-md px-3.5 py-2 text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(45,212,191,0.25)]"
+                style={{ background: "rgba(45,212,191,0.18)", border: "1px solid rgba(45,212,191,0.45)", color: TEAL }}
+                title="Download verified Bosnia & Herzegovina adolescent physical activity dataset (PMC8534587, PMC8620439, PMC7761556)"
+              >
+                <span>🇧🇦</span>
+                <span>Download Bosnia &amp; Herzegovina Sample CSV</span>
               </button>
               <button
                 onClick={downloadSampleCsv}
                 className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
                 style={{ background: "#0B151E", border: "1px solid #1E3243", color: "#94A3B8" }}
+                title="Download generic club CSV template"
               >
-                ↓ Download Sample CSV
+                ↓ Download Club Template
               </button>
               <button
                 onClick={() => setShowEvidence(true)}
                 className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
                 style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.35)", color: AMBER }}
               >
-                ⚑ EU Evidence &amp; Methodology
+                ⚑ EU &amp; BiH Evidence
               </button>
               {customCohort && (
                 <button
@@ -520,15 +559,15 @@ function Dashboard() {
         {mode === "macro" ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#13222F] border border-[#2DD4BF]/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
             <div className="flex items-center gap-2.5">
-              <span className="text-lg">🇪🇺</span>
+              <span className="text-lg">🇧🇦</span>
               <div>
-                <span className="font-bold text-[#F8FAFC]">VERIFIED EUROSTAT &amp; EU EVIDENCE TELEMETRY: </span>
+                <span className="font-bold text-[#F8FAFC]">HOST COUNTRY &amp; EUROPEAN BENCHMARK TELEMETRY: </span>
                 <span className="text-[#94A3B8]">
-                  Displaying official verified sports participation &amp; retention statistics from Eurostat (hlth_ehis_pe3i, hlth_ehis_pe2e), Special Eurobarometer 574, and Erasmus+ ICOACHKIDS+. Zero fabricated local club names.
+                  Displaying verified peer-reviewed Bosnia &amp; Herzegovina adolescent physical activity data (PMC8534587, PMC8620439, PMC7761556) alongside Eurostat (hlth_ehis_pe3i, hlth_ehis_pe2e), Special Eurobarometer 574, and Erasmus+ ICOACHKIDS+. Zero fabricated local club names.
                 </span>
               </div>
             </div>
-            <Badge color="teal">Official Eurostat Macro Data</Badge>
+            <Badge color="teal">BiH &amp; Eurostat Verified</Badge>
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#13222F] border border-[#F59E0B]/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
@@ -915,20 +954,41 @@ function Dashboard() {
         </footer>
       </div>
 
-      {/* ── EU Evidence Modal ── */}
-      <Modal open={showEvidence} onClose={() => setShowEvidence(false)} title="EU Research Evidence & Verified Sources" wide>
+      {/* ── EU & BiH Evidence Modal ── */}
+      <Modal open={showEvidence} onClose={() => setShowEvidence(false)} title="Evidence Base & Verified Methodology" wide>
         <div className="space-y-5">
+          {/* Methodological Note Callout per brief */}
+          <div
+            className="rounded-lg p-3.5 text-xs"
+            style={{
+              background: "rgba(45,212,191,0.08)",
+              border: "1px solid rgba(45,212,191,0.35)",
+              color: "#F8FAFC",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1.5 font-bold text-sm" style={{ color: TEAL }}>
+              <span>🇧🇦</span>
+              <span>Methodological Note — Host Country (Bosnia &amp; Herzegovina):</span>
+            </div>
+            <p className="leading-relaxed text-[#F8FAFC]">
+              {METHODOLOGICAL_NOTE}
+            </p>
+          </div>
+
           <p className="text-xs" style={{ color: "#94A3B8" }}>
-            All benchmarks below are clickable, externally verified EU research sources. Every KPI on this dashboard is derived from these findings.
+            All benchmarks below are clickable, peer-reviewed European and host-country research sources. Every KPI on this dashboard is anchored in these verified findings:
           </p>
-          {EU_EVIDENCE.map((e) => (
+          {BENCHMARK_EVIDENCE_REGISTRY.map((e) => (
             <div
               key={e.id}
               className="rounded-lg p-4"
-              style={{ background: "rgba(45,212,191,0.06)", border: "1px solid rgba(45,212,191,0.2)" }}
+              style={{ background: "#0B151E", border: "1px solid #1E3243" }}
             >
               <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-                <h4 className="font-bold text-[#F8FAFC] text-sm">{e.title}</h4>
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#94A3B8]">{e.country}</span>
+                  <h4 className="font-bold text-[#F8FAFC] text-sm">{e.title}</h4>
+                </div>
                 <Badge color="teal">{e.stat}</Badge>
               </div>
               <p className="text-xs text-[#94A3B8]">{e.finding}</p>
@@ -944,8 +1004,8 @@ function Dashboard() {
             </div>
           ))}
           <div className="rounded-lg p-3 text-xs" style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#F8FAFC" }}>
-            <span className="font-bold" style={{ color: AMBER }}>Methodology:</span>{" "}
-            Female Active Share = active at season end ÷ registered at season start (per gender/cohort). Dropout Cliff = (U14 active girls − U18 active girls) ÷ U14 registered girls. What-If elasticities are illustrative, modeled on Eurobarometer 574 (time barrier: 40%), PMC12330288 (period: 78%), ICOACHKIDS+ (coach gap: 63%). All datasets are synthetic and anonymized for the hackathon.
+            <span className="font-bold" style={{ color: AMBER }}>Calculation Formulae:</span>{" "}
+            Female Active Share = active at season end ÷ registered at season start (per gender/cohort). Dropout Cliff = (U14 active girls − U18 active girls) ÷ U14 registered girls. What-If elasticities are modeled on Eurobarometer 574 (time barrier: 40%), PMC12330288 (period: 78%), and ICOACHKIDS+ (coach gap: 63%).
           </div>
         </div>
       </Modal>

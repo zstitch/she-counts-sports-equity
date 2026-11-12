@@ -1,0 +1,13 @@
+dataset_source,country_code,country_region,age_group,gender,metric_category,socioeconomic_segment,participation_pct,year
+BiH Adolescent Study (PMC8534587),BA,Bosnia & Herzegovina (Host Country),15-19 (Teen / High School),Female,Sufficient Physical Activity (%),All School Adolescents (BiH),44.0,2021
+BiH Adolescent Study (PMC8534587),BA,Bosnia & Herzegovina (Host Country),15-19 (Teen / High School),Male,Sufficient Physical Activity (%),All School Adolescents (BiH),56.0,2021
+BiH Adolescent Study (PMC8534587),BA,Bosnia & Herzegovina (Host Country),15-19 (Teen / High School),Female,Insufficient Physical Activity (%),All School Adolescents (BiH),56.0,2021
+BiH Adolescent Study (PMC8534587),BA,Bosnia & Herzegovina (Host Country),15-19 (Teen / High School),Male,Insufficient Physical Activity (%),All School Adolescents (BiH),44.0,2021
+BiH Late Adolescence Study (PMC8620439),BA,Bosnia & Herzegovina (Host Country),17-18 (Late High School / U18),Female,Sufficient Physical Activity (%),High School Seniors (BiH),27.0,2021
+BiH Late Adolescence Study (PMC8620439),BA,Bosnia & Herzegovina (Host Country),17-18 (Late High School / U18),Male,Sufficient Physical Activity (%),High School Seniors (BiH),41.0,2021
+BiH Late Adolescence Study (PMC8620439),BA,Bosnia & Herzegovina (Host Country),17-18 (Late High School / U18),Female,Insufficient Physical Activity (%),High School Seniors (BiH),73.0,2021
+BiH Late Adolescence Study (PMC8620439),BA,Bosnia & Herzegovina (Host Country),17-18 (Late High School / U18),Male,Insufficient Physical Activity (%),High School Seniors (BiH),59.0,2021
+BiH Longitudinal Study (PMC7761556),BA,Bosnia & Herzegovina (Host Country),15-16 (Baseline Cohort),Female,Longitudinal Sufficient Activity (%),Longitudinal School Cohort (BiH),26.0,2020
+BiH Longitudinal Study (PMC7761556),BA,Bosnia & Herzegovina (Host Country),15-16 (Baseline Cohort),Male,Longitudinal Sufficient Activity (%),Longitudinal School Cohort (BiH),38.0,2020
+BiH Longitudinal Study (PMC7761556),BA,Bosnia & Herzegovina (Host Country),17-18 (Follow-Up Dropout Cohort),Female,Longitudinal Sufficient Activity (%),Longitudinal School Cohort (BiH),21.0,2020
+BiH Longitudinal Study (PMC7761556),BA,Bosnia & Herzegovina (Host Country),17-18 (Follow-Up Dropout Cohort),Male,Longitudinal Sufficient Activity (%),Longitudinal School Cohort (BiH),31.0,2020
