@@ -1,15 +1,16 @@
 /*
- * Tailwind v4 entry — SHE COUNTS: High-Contrast Dark Sports-Telemetry Theme
- * taste-skill compliant: tabular-nums, specular border insets, zero generic gradients,
- * zero low-contrast text on dark surfaces. Zero purple / monochrome tones.
+ * Tailwind v4 entry — SHE COUNTS: Obsidian-Indigo, Electric Orchid-Violet & Championship Gold Theme
  * Token system:
- *   Canvas:        #0B151E
- *   Card surface:  #13222F  border #1E3243
+ *   Canvas:        #080A12
+ *   Card surface:  #111526  border #262D4D
+ *   Elevated box:  #171C33
  *   Primary text:  #F8FAFC
- *   Muted text:    #94A3B8
- *   Teal (female): #2DD4BF
- *   Coral (male):  #FB7185
- *   Amber (cliff): #F59E0B
+ *   Secondary:     #CBD5E1
+ *   Muted text:    #64748B
+ *   Violet (fem):  #C084FC
+ *   Gold (male):   #FBBF24
+ *   Emerald (gain):#34D399
+ *   Coral (hazard):#FB7185
  */
 @import "tailwindcss" source(none);
 @source "../src";
@@ -66,38 +67,61 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ── High-Contrast Dark Sports-Telemetry Design Tokens ── */
+/* ── Exact CSS Theme Variables ── */
 :root {
   --radius: 0.75rem;
 
-  /* Canvas & Surfaces — exact hex specification */
-  --background: #0B151E;                      /* Page canvas */
+  /* Backgrounds & Surfaces */
+  --bg-canvas: #080A12;
+  --bg-card: #111526;
+  --bg-elevated: #171C33;
+  --border-subtle: #262D4D;
+
+  /* Semantic Telemetry Accents */
+  --accent-female: #C084FC;
+  --accent-female-hover: #A855F7;
+  --accent-female-glow: rgba(192, 132, 252, 0.35);
+
+  --accent-gold: #FBBF24;
+  --accent-gold-glow: rgba(251, 191, 36, 0.28);
+
+  --status-positive: #34D399;
+  --status-warning: #F59E0B;
+  --status-danger: #FB7185;
+
+  /* Typography */
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+
+  /* Canvas & Surfaces mapping */
+  --background: #080A12;                      /* Page canvas */
   --foreground: #F8FAFC;                      /* Primary headings & hero KPI numbers */
-  --card: #13222F;                            /* Elevated bento card surface */
+  --card: #111526;                            /* Elevated bento card surface */
   --card-foreground: #F8FAFC;
-  --popover: #13222F;
+  --popover: #111526;
   --popover-foreground: #F8FAFC;
 
-  /* Semantic data colors — strict 3-color telemetry system */
-  --teal:  #2DD4BF;   /* A. Electric Cyan — Female Active & Target Parity */
-  --coral: #FB7185;   /* B. Sunset Coral  — Male Baseline, Disparity & Dropout Hazard */
-  --amber: #F59E0B;   /* C. Warm Amber    — Dropout Cliff & Optimizer Projection */
+  /* Semantic data colors */
+  --teal:  #C084FC;   /* Female Active & Target Parity (Electric Orchid-Violet) */
+  --coral: #FB7185;   /* Sunset Coral — Disparity & Dropout Hazard */
+  --amber: #FBBF24;   /* Championship Gold — Male Baseline & Cliff */
 
-  /* Primary = Teal */
-  --primary: #2DD4BF;
-  --primary-foreground: #0B151E;
+  /* Primary = Violet */
+  --primary: #C084FC;
+  --primary-foreground: #080A12;
 
   /* Secondary surface = interactive hover */
-  --secondary: #1E3243;
+  --secondary: #171C33;
   --secondary-foreground: #F8FAFC;
 
   /* Muted */
-  --muted: #1E3243;
-  --muted-foreground: #94A3B8;               /* Secondary / muted labels */
+  --muted: #171C33;
+  --muted-foreground: #64748B;               /* Secondary / muted labels */
 
-  /* Accent = Coral */
-  --accent: #FB7185;
-  --accent-foreground: #0B151E;
+  /* Accent = Gold */
+  --accent: #FBBF24;
+  --accent-foreground: #080A12;
 
   /* Warning = Amber */
   --warning: #F59E0B;
@@ -106,24 +130,24 @@
   --destructive-foreground: #F8FAFC;
 
   /* Borders: card & table grid lines */
-  --border: #1E3243;
-  --input: #1E3243;
-  --ring: #2DD4BF;
+  --border: #262D4D;
+  --input: #171C33;
+  --ring: #C084FC;
 
-  --chart-1: #2DD4BF;
-  --chart-2: #FB7185;
-  --chart-3: #F59E0B;
-  --chart-4: oklch(0.646 0.222 41);
-  --chart-5: oklch(0.6 0.118 184);
+  --chart-1: #C084FC;
+  --chart-2: #FBBF24;
+  --chart-3: #34D399;
+  --chart-4: #FB7185;
+  --chart-5: #38BDF8;
 
-  --sidebar: #13222F;
+  --sidebar: #111526;
   --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #2DD4BF;
-  --sidebar-primary-foreground: #0B151E;
-  --sidebar-accent: #1E3243;
+  --sidebar-primary: #C084FC;
+  --sidebar-primary-foreground: #080A12;
+  --sidebar-accent: #171C33;
   --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #1E3243;
-  --sidebar-ring: #2DD4BF;
+  --sidebar-border: #262D4D;
+  --sidebar-ring: #C084FC;
 }
 
 @layer base {
@@ -152,44 +176,45 @@
 
 /* Bento card: elevated surface with top specular border inset */
 @utility bento-card {
-  background: #13222F;
-  border: 1px solid #1E3243;
+  background: #111526;
+  border: 1px solid #262D4D;
   box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-xl);
 }
 
 /* Hover bento card */
 @utility bento-hover {
-  background: #1E3243;
-  border-color: rgba(45, 212, 191, 0.35);
+  background: #171C33;
+  border-color: rgba(192, 132, 252, 0.45);
   box-shadow:
-    0 16px 40px -12px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.09);
+    0 16px 40px -12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 /* Semantic badge fills */
-@utility badge-teal  { background: rgba(45, 212, 191, 0.15); color: #2DD4BF; border: 1px solid rgba(45, 212, 191, 0.35); }
-@utility badge-coral { background: rgba(251, 113, 133, 0.15); color: #FB7185; border: 1px solid rgba(251, 113, 133, 0.35); }
-@utility badge-amber { background: rgba(245, 158, 11, 0.15);  color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.35); }
+@utility badge-violet { background: rgba(192, 132, 252, 0.15); color: #C084FC; border: 1px solid rgba(192, 132, 252, 0.35); }
+@utility badge-gold   { background: rgba(251, 191, 36, 0.15);  color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.35); }
+@utility badge-emerald{ background: rgba(52, 211, 153, 0.15);  color: #34D399; border: 1px solid rgba(52, 211, 153, 0.35); }
+@utility badge-coral  { background: rgba(251, 113, 133, 0.15); color: #FB7185; border: 1px solid rgba(251, 113, 133, 0.35); }
 
 /* Secondary body text */
-@utility text-body { color: oklch(0.89 0.008 247); }   /* #E2E8F0 */
-@utility text-aux  { color: oklch(0.60 0.025 256); }   /* #94A3B8 */
+@utility text-body { color: #CBD5E1; }
+@utility text-aux  { color: #64748B; }
 
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: #1E3243;
+  background: #171C33;
   height: 6px;
   border-radius: 9999px;
   outline: none;
-  accent-color: #2DD4BF;
+  accent-color: #C084FC;
 }
 input[type="range"]::-webkit-slider-runnable-track {
-  background: #1E3243;
+  background: #171C33;
   height: 6px;
   border-radius: 9999px;
 }
@@ -199,13 +224,13 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #2DD4BF;
+  background: #C084FC;
   cursor: pointer;
   margin-top: -5px;
-  box-shadow: 0 0 10px rgba(45, 212, 191, 0.55);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
 }
 input[type="range"]::-moz-range-track {
-  background: #1E3243;
+  background: #171C33;
   height: 6px;
   border-radius: 9999px;
 }
@@ -213,19 +238,19 @@ input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #2DD4BF;
+  background: #C084FC;
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 10px rgba(45, 212, 191, 0.55);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
 }
 
 /* Recharts tooltip override */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: rgba(11, 21, 30, 0.97) !important;
-  border: 1px solid #1E3243 !important;
+  background: rgba(8, 10, 18, 0.97) !important;
+  border: 1px solid #262D4D !important;
   border-radius: 8px !important;
   color: #F8FAFC !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
   backdrop-filter: blur(12px) !important;
 }
 

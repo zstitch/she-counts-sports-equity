@@ -28,23 +28,24 @@ export const Route = createFileRoute("/")({
   component: Dashboard,
 });
 
-// ── Design tokens — exact hex specification per brief
-const TEAL  = "#2DD4BF";   // A. Electric Cyan / Teal — Female Active & Parity
-const CORAL = "#FB7185";   // B. Sunset Coral  — Male Baseline, Disparity & Dropout Hazard
-const AMBER = "#F59E0B";   // C. Warm Amber    — Dropout Cliff & Optimizer Projection
-const AMBER_BRIGHT = "#FBBF24"; // Warm Amber (KPI 2 & Interventions)
-const SKY   = "#38BDF8";   // Electric Sky Blue (KPI 3 & Prime Rotation)
-const VIOLET = "#A78BFA";  // Vibrant Violet (KPI 4 & Female Mentors)
+// ── Obsidian-Indigo, Electric Orchid-Violet & Championship Gold Telemetry Tokens ──
+const VIOLET = "#C084FC";       // Electric Orchid-Violet (Female Active & Parity)
+const VIOLET_HOVER = "#A855F7"; // Hover Orchid-Violet
+const GOLD   = "#FBBF24";       // Championship Gold (Male Baseline & Dropout Cliff)
+const EMERALD = "#34D399";      // Mint Emerald (Growth Deltas & Positive Status)
+const CORAL  = "#FB7185";       // Soft Coral-Rose (Disparity & Hazard)
+const SKY    = "#38BDF8";       // Electric Sky Blue (Prime-Hour Interventions)
+const AMBER  = "#F59E0B";       // Warning Amber
 
-// X-axis cohort labels: bold white (#F8FAFC); Y-axis percentages: muted (#94A3B8)
+// X-axis cohort labels: bold white (#F8FAFC); Y-axis percentages: muted (#64748B)
 const CHART_TICK_X = { fill: "#F8FAFC", fontSize: 12, fontWeight: 600 } as const;
-const CHART_TICK_Y = { fill: "#94A3B8", fontSize: 11 } as const;
-// Table & chart grid lines use #1E3243
-const CHART_GRID  = { stroke: "#1E3243", strokeDasharray: "3 3" } as const;
+const CHART_TICK_Y = { fill: "#64748B", fontSize: 11 } as const;
+// Table & chart grid lines use #262D4D
+const CHART_GRID  = { stroke: "#262D4D", strokeDasharray: "3 3" } as const;
 const TIP_STYLE   = {
   contentStyle: {
-    background: "rgba(11,21,30,0.97)",
-    border: "1px solid #1E3243",
+    background: "rgba(8,10,18,0.97)",
+    border: "1px solid #262D4D",
     borderRadius: 8,
     color: "#F8FAFC",
     boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
@@ -52,12 +53,12 @@ const TIP_STYLE   = {
     fontSize: 12,
   },
   labelStyle: { color: "#F8FAFC", fontWeight: 600 },
-  itemStyle: { color: "#94A3B8" },
+  itemStyle: { color: "#CBD5E1" },
 };
 
-// ── Neon Runner Watermark — strips white background via offscreen HTML5 canvas on mount, centers behind retention curve
+// ── Neon Runner Watermark — strips white background via offscreen HTML5 canvas on mount & tints to electric orchid-violet (#C084FC)
 function RunnerWatermark() {
-  const [dataUrl, setDataUrl] = useState<string>("/Neon%20Hologram%20Runner.png");
+  const [dataUrl, setDataUrl] = useState<string>("/neon-runner.png");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -65,7 +66,7 @@ function RunnerWatermark() {
     let active = true;
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = "/Neon%20Hologram%20Runner.png";
+    img.src = "/neon-runner.png";
 
     img.onload = () => {
       try {
@@ -82,9 +83,9 @@ function RunnerWatermark() {
         ctx.drawImage(img, 0, 0);
         const imgData = ctx.getImageData(0, 0, w, h);
         const d = imgData.data;
-        let modified = false;
 
-        // Convert near-white pixels (r > 220 && g > 220 && b > 220) to transparent with smooth anti-aliased edge fading
+        // 1. Convert near-white pixels (r > 200 && g > 200 && b > 200) to transparent
+        // 2. Tint foreground pixels to Electric Orchid-Violet (#C084FC: 192, 132, 252)
         for (let i = 0; i < d.length; i += 4) {
           const r = d[i]!;
           const g = d[i + 1]!;
@@ -92,33 +93,33 @@ function RunnerWatermark() {
           const a = d[i + 3]!;
           if (a === 0) continue;
 
-          // Check if pixel is in near-white range
           if (r > 200 && g > 200 && b > 200) {
-            modified = true;
             if (r > 220 && g > 220 && b > 220) {
-              // Full transparency for near-white outer background
               d[i + 3] = 0;
             } else {
-              // Smooth anti-aliased edge fading between 200 and 220
               const minChannel = Math.min(r, g, b);
               const fade = Math.max(0, Math.min(1, (220 - minChannel) / 20));
               d[i + 3] = Math.round(a * fade);
             }
+          } else {
+            // Foreground neon runner pixel: tint to electric orchid-violet (#C084FC)
+            const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            d[i]     = Math.min(255, Math.round(192 * lum * 1.35));
+            d[i + 1] = Math.min(255, Math.round(132 * lum * 1.35));
+            d[i + 2] = Math.min(255, Math.round(252 * lum * 1.35));
           }
         }
 
-        if (modified) {
-          ctx.putImageData(imgData, 0, 0);
-          const processedUrl = canvas.toDataURL("image/png");
-          if (active) setDataUrl(processedUrl);
-        }
+        ctx.putImageData(imgData, 0, 0);
+        const processedUrl = canvas.toDataURL("image/png");
+        if (active) setDataUrl(processedUrl);
       } catch (err) {
         console.warn("Offscreen canvas runner background strip error:", err);
       }
     };
 
     img.onerror = () => {
-      if (active) setDataUrl("/neon-runner.png");
+      if (active) setDataUrl("/Neon%20Hologram%20Runner.png");
     };
 
     return () => {
@@ -134,30 +135,32 @@ function RunnerWatermark() {
       <img
         src={dataUrl}
         alt=""
-        className="pointer-events-none select-none max-h-[210px] w-auto object-contain opacity-30 drop-shadow-[0_0_16px_rgba(45,212,191,0.45)]"
+        className="pointer-events-none select-none max-h-[210px] w-auto object-contain opacity-30 drop-shadow-[0_0_16px_rgba(192,132,252,0.45)]"
       />
     </div>
   );
 }
 
-// ── Shared bento card — #13222F surface, #1E3243 border
+// ── Shared bento card — #111526 surface, #262D4D border ──
 function Card({
   title, children, className = "", accent,
 }: {
-  title: string; children: ReactNode; className?: string; accent?: "teal" | "coral" | "amber";
+  title: string; children: ReactNode; className?: string; accent?: "violet" | "gold" | "emerald" | "coral" | "amber" | "teal" | undefined;
 }) {
   const borderColor =
-    accent === "teal"  ? "rgba(45,212,191,0.4)"  :
-    accent === "coral" ? "rgba(251,113,133,0.4)"  :
-    accent === "amber" ? "rgba(245,158,11,0.4)"   : "#1E3243";
+    accent === "violet" ? "rgba(192,132,252,0.45)" :
+    accent === "gold"   ? "rgba(251,191,36,0.55)"  :
+    accent === "emerald"? "rgba(52,211,153,0.45)"  :
+    accent === "coral"  ? "rgba(251,113,133,0.45)" :
+    accent === "amber"  ? "rgba(245,158,11,0.45)"  : "#262D4D";
 
   return (
     <section
       className={`card-lift rounded-xl p-5 ${className}`}
       style={{
-        background: "#13222F",
+        background: "#111526",
         border: `1px solid ${borderColor}`,
-        boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
       }}
     >
       <h2 className="label-caps mb-3">{title}</h2>
@@ -166,7 +169,7 @@ function Card({
   );
 }
 
-// ── Donut chart
+// ── Donut chart ──
 function Donut({ data, center }: { data: { v: number; c: string; glow?: boolean }[]; center: ReactNode }) {
   return (
     <div className="relative h-48">
@@ -177,7 +180,7 @@ function Donut({ data, center }: { data: { v: number; c: string; glow?: boolean 
               <Cell
                 key={i}
                 fill={d.c}
-                style={d.glow ? { filter: "drop-shadow(0 0 10px rgba(45,212,191,0.45))" } : undefined}
+                style={d.glow ? { filter: "drop-shadow(0 0 10px rgba(192,132,252,0.45))" } : undefined}
               />
             ))}
           </Pie>
@@ -190,7 +193,7 @@ function Donut({ data, center }: { data: { v: number; c: string; glow?: boolean 
   );
 }
 
-// ── Modal / Drawer
+// ── Modal / Drawer ──
 function Modal({ open, onClose, title, wide, children }: {
   open: boolean; onClose: () => void; title: string; wide?: boolean; children: ReactNode;
 }) {
@@ -198,15 +201,15 @@ function Modal({ open, onClose, title, wide, children }: {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(11,21,30,0.88)", backdropFilter: "blur(8px)" }}
+      style={{ background: "rgba(8,10,18,0.88)", backdropFilter: "blur(10px)" }}
       onClick={onClose}
     >
       <div
         className={`max-h-[88vh] w-full overflow-y-auto rounded-xl p-6 ${wide ? "max-w-3xl" : "max-w-2xl"}`}
         style={{
-          background: "#13222F",
-          border: "1px solid #1E3243",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.9), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+          background: "#111526",
+          border: "1px solid #262D4D",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.9), inset 0 1px 0 0 rgba(255,255,255,0.06)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -214,8 +217,7 @@ function Modal({ open, onClose, title, wide, children }: {
           <h3 className="text-lg font-bold text-white">{title}</h3>
           <button
             onClick={onClose}
-            className="rounded-md px-2 py-1 text-sm transition-colors"
-            style={{ color: "#94A3B8" }}
+            className="rounded-md px-2 py-1 text-sm transition-colors text-[#64748B] hover:text-[#F8FAFC]"
             aria-label="Close"
           >✕</button>
         </div>
@@ -225,22 +227,24 @@ function Modal({ open, onClose, title, wide, children }: {
   );
 }
 
-// ── Badge
+// ── Badge ──
 function Badge({
-  color = "teal",
+  color = "violet",
   children,
   customStyle,
 }: {
-  color?: "teal" | "coral" | "amber" | "sky" | "violet" | undefined;
+  color?: "violet" | "gold" | "emerald" | "coral" | "sky" | "amber" | "teal" | undefined;
   children: ReactNode;
   customStyle?: { background: string; color: string; border: string } | undefined;
 }) {
   const styles = customStyle ?? {
-    teal:   { background: "rgba(45,212,191,0.15)",  color: TEAL,         border: "1px solid rgba(45,212,191,0.35)" },
-    coral:  { background: "rgba(251,113,133,0.15)", color: CORAL,        border: "1px solid rgba(251,113,133,0.35)" },
-    amber:  { background: "rgba(251,191,36,0.15)",  color: AMBER_BRIGHT, border: "1px solid rgba(251,191,36,0.35)" },
-    sky:    { background: "rgba(56,189,248,0.15)",  color: SKY,          border: "1px solid rgba(56,189,248,0.35)" },
-    violet: { background: "rgba(167,139,250,0.15)", color: VIOLET,       border: "1px solid rgba(167,139,250,0.35)" },
+    violet:  { background: "rgba(192,132,252,0.15)", color: VIOLET,  border: "1px solid rgba(192,132,252,0.35)" },
+    gold:    { background: "rgba(251,191,36,0.15)",  color: GOLD,    border: "1px solid rgba(251,191,36,0.35)" },
+    emerald: { background: "rgba(52,211,153,0.15)",  color: EMERALD, border: "1px solid rgba(52,211,153,0.35)" },
+    coral:   { background: "rgba(251,113,133,0.15)", color: CORAL,   border: "1px solid rgba(251,113,133,0.35)" },
+    sky:     { background: "rgba(56,189,248,0.15)",  color: SKY,     border: "1px solid rgba(56,189,248,0.35)" },
+    amber:   { background: "rgba(245,158,11,0.15)",  color: AMBER,   border: "1px solid rgba(245,158,11,0.35)" },
+    teal:    { background: "rgba(192,132,252,0.15)", color: VIOLET,  border: "1px solid rgba(192,132,252,0.35)" },
   }[color];
   return (
     <span className="kpi inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" style={styles}>
@@ -249,12 +253,12 @@ function Badge({
   );
 }
 
-// ── KPI ribbon card
+// ── KPI ribbon card ──
 function KpiCard({
-  title, main, mainColor = "#F8FAFC", sub, badge, badgeColor = "teal", customBadgeStyle, accentColor, bottom,
+  title, main, mainColor = "#F8FAFC", sub, badge, badgeColor = "violet", customBadgeStyle, accentColor, bottom,
 }: {
   title: string; main: string; mainColor?: string | undefined; sub: string;
-  badge?: string | undefined; badgeColor?: "teal" | "coral" | "amber" | "sky" | "violet" | undefined;
+  badge?: string | undefined; badgeColor?: "violet" | "gold" | "emerald" | "coral" | "sky" | "amber" | "teal" | undefined;
   customBadgeStyle?: { background: string; color: string; border: string } | undefined;
   accentColor?: string | undefined; bottom?: ReactNode | undefined;
 }) {
@@ -262,40 +266,40 @@ function KpiCard({
     <div
       className="card-lift flex flex-col gap-3 rounded-xl p-5"
       style={{
-        background: "#13222F",
+        background: "#111526",
         border: "1px solid",
-        borderColor: accentColor ? `${accentColor}80` : "#1E3243",
+        borderColor: accentColor ? `${accentColor}80` : "#262D4D",
         boxShadow: accentColor
-          ? `0 8px 30px rgba(0,0,0,0.45), 0 0 16px ${accentColor}25, inset 0 1px 0 0 rgba(255,255,255,0.07)`
-          : "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+          ? `0 8px 30px rgba(0,0,0,0.5), 0 0 16px ${accentColor}25, inset 0 1px 0 0 rgba(255,255,255,0.06)`
+          : "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
       }}
     >
-      <span className="label-caps text-[#94A3B8]">{title}</span>
+      <span className="label-caps text-[#64748B]">{title}</span>
       <span className="kpi text-3xl font-extrabold tracking-tight" style={{ color: mainColor }}>
         {main}
       </span>
-      <span className="text-xs text-[#94A3B8]">{sub}</span>
+      <span className="text-xs text-[#CBD5E1]">{sub}</span>
       {badge && <Badge color={badgeColor} customStyle={customBadgeStyle}>{badge}</Badge>}
       {bottom}
     </div>
   );
 }
 
-// ── Root-cause diagnostic card
+// ── Root-cause diagnostic card ──
 function RootCauseCard({
   icon, title, stat, source, fix, evidence, color,
 }: {
   icon: string; title: string; stat: string; source: string; fix: string;
-  evidence: string; color: "coral" | "amber" | "teal";
+  evidence: string; color: "coral" | "gold" | "violet" | "amber" | "teal";
 }) {
-  const c = color === "coral" ? CORAL : color === "amber" ? AMBER : TEAL;
+  const c = color === "violet" ? VIOLET : color === "gold" ? GOLD : color === "coral" ? CORAL : color === "amber" ? AMBER : VIOLET;
   return (
     <div
       className="card-lift flex flex-col gap-4 rounded-xl p-5"
       style={{
-        background: "#13222F",
+        background: "#111526",
         border: `1px solid ${c}66`,
-        boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
       }}
     >
       <div className="flex items-start gap-3">
@@ -305,23 +309,23 @@ function RootCauseCard({
           <span className="kpi text-sm font-extrabold" style={{ color: c }}>{stat}</span>
         </div>
       </div>
-      <p className="text-xs text-[#94A3B8]">{source}</p>
+      <p className="text-xs text-[#CBD5E1]">{source}</p>
       <div
         className="rounded-lg p-3 text-xs"
-        style={{ background: "#0B151E", border: `1px solid ${c}40`, color: "#F8FAFC" }}
+        style={{ background: "#080A12", border: `1px solid ${c}40`, color: "#F8FAFC" }}
       >
         <span className="font-bold" style={{ color: c }}>Concrete Fix: </span>
         {fix}
       </div>
-      <span className="text-xs italic text-[#94A3B8]">{evidence}</span>
+      <span className="text-xs italic text-[#64748B]">{evidence}</span>
     </div>
   );
 }
 
-// ── Progress bar
-function ProgressBar({ value, max = 100, color = TEAL }: { value: number; max?: number; color?: string }) {
+// ── Progress bar ──
+function ProgressBar({ value, max = 100, color = VIOLET }: { value: number; max?: number; color?: string }) {
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: "#1E3243" }}>
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#171C33] border border-[#262D4D]">
       <div
         className="h-full rounded-full transition-all duration-700"
         style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }}
@@ -330,12 +334,12 @@ function ProgressBar({ value, max = 100, color = TEAL }: { value: number; max?: 
   );
 }
 
-// ── Controlled telemetry range slider with zero lag and decorative active track
+// ── Controlled telemetry range slider with zero lag and decorative active track ──
 function ControlledTelemetrySlider({
   label,
   value,
   onChange,
-  accentColor = TEAL,
+  accentColor = VIOLET,
 }: {
   label: string;
   value: number;
@@ -345,16 +349,16 @@ function ControlledTelemetrySlider({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-medium text-[#94A3B8]">{label}</span>
+        <span className="font-medium text-[#CBD5E1]">{label}</span>
         <span className="kpi font-extrabold text-[#F8FAFC] tabular-nums">{value}%</span>
       </div>
       <div className="relative flex items-center h-6 w-full">
         {/* Decorative background track (pointer-events-none) */}
-        <div className="pointer-events-none absolute inset-x-0 h-2 rounded-full bg-[#1E3243]" />
+        <div className="pointer-events-none absolute inset-x-0 h-2 rounded-full bg-[#171C33] border border-[#262D4D]" />
 
         {/* Decorative active progress fill (pointer-events-none) */}
         <div
-          className="pointer-events-none absolute left-0 h-2 rounded-full transition-none shadow-[0_0_8px_rgba(45,212,191,0.35)]"
+          className="pointer-events-none absolute left-0 h-2 rounded-full transition-none shadow-[0_0_8px_rgba(192,132,252,0.35)]"
           style={{
             width: `${value}%`,
             background: `linear-gradient(90deg, ${accentColor}cc 0%, ${accentColor} 100%)`,
@@ -363,7 +367,7 @@ function ControlledTelemetrySlider({
 
         {/* Decorative thumb circle (pointer-events-none) */}
         <div
-          className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#0B151E] shadow-[0_0_10px_rgba(45,212,191,0.7)]"
+          className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#080A12] shadow-[0_0_10px_rgba(192,132,252,0.7)]"
           style={{
             left: `${value}%`,
             backgroundColor: accentColor,
@@ -412,7 +416,6 @@ function Dashboard() {
     setS2(0);
     setS3(0);
   }
-  const [showMethod, setShowMethod] = useState(false);
   const [showEvidence, setShowEvidence] = useState(false);
   const [showAiPlan, setShowAiPlan] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -428,7 +431,6 @@ function Dashboard() {
 
   const k: Kpis = useMemo(() => {
     if (customCohort) {
-      // Inject custom rows into compute (override cohort data)
       const { rows } = customCohort;
       if (rows.length === 0) return computeKpis(view);
       const c = rows;
@@ -488,7 +490,6 @@ function Dashboard() {
   }, [view, customCohort]);
 
   const sim = simulate(k, s1, s2, s3);
-  const isInterventionActive = isAfterMode || s1 > 0 || s2 > 0 || s3 > 0;
   const postPrimeSlot = Math.min(50, Math.round(k.primeSlotAvg + (50 - Math.min(50, k.primeSlotAvg)) * (s1 / 50)));
   const primeGain = Math.max(0, postPrimeSlot - k.primeSlotAvg);
   const postCoach = Math.min(100, Math.round(k.femaleCoachAvg + (45 - Math.min(45, k.femaleCoachAvg)) * (s2 / 45)));
@@ -508,7 +509,7 @@ function Dashboard() {
   const fallbackPlan = interventionPlan(k, customCohort?.label ?? label);
   const plan = aiPlan ?? fallbackPlan;
 
-  // ── CSV Upload (supports Bosnia & Herzegovina research CSV or Grassroots Club CSV)
+  // ── CSV Upload (supports Bosnia & Herzegovina research CSV or Grassroots Club CSV) ──
   function handleCsvUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -554,7 +555,7 @@ function Dashboard() {
     a.click(); URL.revokeObjectURL(url);
   }
 
-  // ── AI Analysis
+  // ── AI Analysis ──
   async function runAnalysis() {
     setShowAiPlan(true); setLoading(true); setAiPlan(null);
     const activeLabel = customCohort?.label ?? label;
@@ -626,186 +627,187 @@ function Dashboard() {
   const displayLabel = customCohort?.label ?? label;
 
   return (
-    <div className="min-h-screen font-sans" style={{ background: "#0B151E", color: "#F8FAFC" }}>
+    <div className="min-h-screen font-sans" style={{ background: "#080A12", color: "#F8FAFC" }}>
       <div className="mx-auto max-w-[1600px] space-y-5 p-4 md:p-6">
 
-        {/* ── Header ── */}
+        {/* ── Top Control Strip & Single-Row Header Bar ── */}
         <header
           className="rounded-xl p-5"
           style={{
-            background: "#13222F",
-            border: "1px solid #1E3243",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+            background: "#111526",
+            border: "1px solid #262D4D",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
           }}
         >
-          {/* ── Mode Switcher: Macro Benchmark vs Club Sandbox ── */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1E3243] pb-4 mb-4">
+          {/* ── Top Control Strip (Full-Width Bar above Header) ── */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#262D4D] pb-3.5 mb-4">
+            {/* Left: View Mode Toggle */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mr-1">View Mode:</span>
-              <button
-                type="button"
-                onClick={() => { setMode("macro"); setCustomCohort(null); setView("bih"); }}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  mode === "macro"
-                    ? "bg-[#2DD4BF] text-[#0B151E] shadow-[0_0_15px_rgba(45,212,191,0.4)]"
-                    : "bg-[#0B151E] text-[#94A3B8] border border-[#1E3243] hover:text-[#F8FAFC]"
-                }`}
-              >
-                <span>🇧🇦</span>
-                <span>BiH Host Country &amp; Eurostat Verified Benchmarks</span>
-                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/20 font-mono">Real Macro Data</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setMode("sandbox"); setView("demo-football"); }}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  mode === "sandbox"
-                    ? "bg-[#F59E0B] text-[#0B151E] shadow-[0_0_15px_rgba(245,158,11,0.4)]"
-                    : "bg-[#0B151E] text-[#94A3B8] border border-[#1E3243] hover:text-[#F8FAFC]"
-                }`}
-              >
-                <span>🧪</span>
-                <span>Club Diagnostic Sandbox (Synthetic Demo Model — Law 03)</span>
-                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/20 font-mono">Simulation Mode</span>
-              </button>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] mr-1">VIEW MODE:</span>
+              <div className="flex items-center rounded-full bg-[#171C33] border border-[#262D4D] p-1">
+                <button
+                  type="button"
+                  onClick={() => { setMode("macro"); setCustomCohort(null); setView("bih"); }}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    mode === "macro"
+                      ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
+                      : "text-[#CBD5E1] hover:text-[#F8FAFC]"
+                  }`}
+                >
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${mode === "macro" ? "bg-[#080A12]" : "bg-[#C084FC]"}`} />
+                  <span className="font-bold text-[11px] font-mono opacity-80">BA</span>
+                  <span>BiH Host Country &amp; Eurostat Verified Benchmarks</span>
+                  <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded font-mono font-bold ${
+                    mode === "macro" ? "bg-black/10 text-[#080A12]" : "bg-white/5 text-[#C084FC]"
+                  }`}>Real Macro Data</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMode("sandbox"); setView("demo-football"); }}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    mode === "sandbox"
+                      ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
+                      : "text-[#CBD5E1] hover:text-[#F8FAFC]"
+                  }`}
+                >
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${mode === "sandbox" ? "bg-[#080A12]" : "bg-[#FBBF24]"}`} />
+                  <span>🧪 Club Diagnostic Sandbox (Synthetic Demo Model — Law 03)</span>
+                  <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded font-mono font-bold ${
+                    mode === "sandbox" ? "bg-black/10 text-[#080A12]" : "bg-white/5 text-[#FBBF24]"
+                  }`}>Simulation Mode</span>
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="kpi text-xs font-semibold px-2.5 py-1 rounded-md bg-[#0B151E] border border-[#1E3243] text-[#94A3B8] hidden xl:inline-block">
-                Track 04: Count What Matters
-              </span>
 
-              {/* ── Prominent High-Contrast BEFORE vs. AFTER (90-Day Interventions) Toggle ── */}
-              <div className="flex items-center gap-1.5 rounded-xl p-1 bg-[#0B151E] border border-[#1E3243] shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
-                <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider px-2 hidden sm:inline">
-                  SIMULATION STATE:
-                </span>
-                <div className="flex items-center rounded-lg bg-[#13222F] p-0.5 border border-[#1E3243]">
-                  <button
-                    type="button"
-                    onClick={resetToBaseline}
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      !isAfterMode
-                        ? "bg-[#1E3243] text-[#F8FAFC] shadow-sm border border-white/10"
-                        : "text-[#94A3B8] hover:text-[#F8FAFC]"
-                    }`}
-                    aria-pressed={!isAfterMode}
-                  >
-                    <span>📊</span>
-                    <span>BEFORE: Current Baseline</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={applyAfterTarget}
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      isAfterMode
-                        ? "bg-[#2DD4BF] text-[#0B151E] shadow-[0_0_20px_rgba(45,212,191,0.55)] border border-[#2DD4BF]"
-                        : "text-[#94A3B8] hover:text-[#2DD4BF]"
-                    }`}
-                    aria-pressed={isAfterMode}
-                  >
-                    <span className="relative flex h-2 w-2">
-                      {isAfterMode && (
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B151E] opacity-75"></span>
-                      )}
-                      <span className={`relative inline-flex rounded-full h-2 w-2 ${isAfterMode ? "bg-[#0B151E]" : "bg-[#2DD4BF]"}`}></span>
-                    </span>
-                    <span>AFTER: Interventions Applied</span>
-                    <span className={`rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-mono font-black ${
-                      isAfterMode ? "bg-black/20 text-[#0B151E]" : "bg-black/40 text-[#2DD4BF]"
-                    }`}>
-                      90-Day Target
-                    </span>
-                  </button>
-                </div>
+            {/* Right: Simulation State (Before vs. After) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] hidden sm:inline mr-1">SIMULATION STATE:</span>
+              <div className="flex items-center rounded-full bg-[#171C33] border border-[#262D4D] p-1">
+                <button
+                  type="button"
+                  onClick={resetToBaseline}
+                  className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    !isAfterMode
+                      ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
+                      : "text-[#CBD5E1] hover:text-[#F8FAFC]"
+                  }`}
+                  aria-pressed={!isAfterMode}
+                >
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${!isAfterMode ? "bg-[#080A12]" : "bg-[#64748B]"}`} />
+                  <span>Before: Baseline</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={applyAfterTarget}
+                  className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    isAfterMode
+                      ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
+                      : "text-[#CBD5E1] hover:text-[#F8FAFC]"
+                  }`}
+                  aria-pressed={isAfterMode}
+                >
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${isAfterMode ? "bg-[#C084FC]" : "bg-[#64748B]"}`} />
+                  <span>After: 90-Day Target</span>
+                  <span className={`rounded px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-mono font-bold ${
+                    isAfterMode ? "bg-[#C084FC]/25 text-[#080A12]" : "bg-white/5 text-[#C084FC]"
+                  }`}>
+                    +Parity
+                  </span>
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
+          {/* ── Main Header Row (Single Clean Horizontal Row) ── */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Left: Brand & Subtitle */}
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-2xl font-extrabold tracking-tight text-[#F8FAFC] md:text-3xl">
-                  SHE COUNTS: <span style={{ color: TEAL }}>Women in Sport</span>
+                  SHE COUNTS: <span style={{ color: VIOLET }}>Women in Sport</span>
                 </h1>
-                {mode === "macro" ? (
-                  <Badge color="teal">🇧🇦 Host Country &amp; Eurostat Benchmarks</Badge>
-                ) : (
-                  <Badge color="amber">🧪 Club Diagnostic Sandbox (Synthetic Demo)</Badge>
-                )}
-                {customCohort && <Badge color="amber">{customCohort.label}</Badge>}
-              </div>
-              <p className="text-sm italic text-[#94A3B8]">
-                {mode === "macro"
-                  ? "Verified Geographies (BiH Adolescent Studies PMC8534587, PMC8620439, PMC7761556 & Eurostat hlth_ehis_pe3i) — Zero Fabricated Club Names"
-                  : "Club Diagnostic Sandbox: Grassroots schedule equity, coaching ratios & washroom period-support simulation"}
-              </p>
-              <div className="flex flex-wrap items-center gap-3">
-                <label className="flex items-center gap-2 text-sm">
-                  <span className="label-caps text-[#94A3B8]">
-                    {mode === "macro" ? "Verified Macro Geography" : "Sport Discipline (Club Model)"}
+                {customCohort && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#FBBF24]/15 border border-[#FBBF24]/35 text-[#FBBF24] font-semibold">
+                    {customCohort.label}
                   </span>
-                  <select
-                    value={customCohort ? (customCohort.isMacro ? "bih" : "demo-football") : view}
-                    onChange={(e) => { setCustomCohort(null); setView(e.target.value as ClubId); }}
-                    className="rounded-md px-3 py-1.5 text-sm text-[#F8FAFC] font-medium"
-                    style={{ background: "#0B151E", border: "1px solid #1E3243" }}
-                    disabled={!!customCohort}
-                  >
-                    {currentOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-                  </select>
-                </label>
+                )}
               </div>
+              <p className="text-xs text-[#64748B]">
+                Track 04 · Verified BiH &amp; Eurostat Benchmarks (Zero-PII Architecture)
+              </p>
             </div>
-            <div className="flex flex-wrap items-end gap-2">
+
+            {/* Center-Right Controls */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Warm Championship Gold Geography / Sport Dropdown */}
+              <select
+                value={customCohort ? (customCohort.isMacro ? "bih" : "demo-football") : view}
+                onChange={(e) => { setCustomCohort(null); setView(e.target.value as ClubId); }}
+                className="rounded-lg px-3 py-1.5 text-xs font-bold transition-all border border-[#FBBF24]/70 bg-[#FBBF24]/10 text-[#FBBF24] outline-none cursor-pointer"
+                disabled={!!customCohort}
+              >
+                {currentOptions.map((o) => (
+                  <option key={o.id} value={o.id} className="bg-[#111526] text-[#F8FAFC]">
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+
+              {/* Compact High-Contrast Action Buttons */}
               <input
                 ref={fileInputRef} type="file" accept=".csv" className="hidden"
                 onChange={handleCsvUpload} aria-label="Upload CSV Data"
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
-                style={{ background: "rgba(45,212,191,0.12)", border: "1px solid rgba(45,212,191,0.35)", color: TEAL }}
-                aria-label="Upload CSV Data"
+                className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all bg-[#171C33] border border-[#262D4D] text-[#CBD5E1] hover:border-[#C084FC] hover:text-[#F8FAFC]"
                 title="Upload Bosnia & Herzegovina research CSV or grassroots club CSV"
               >
-                ↑ Upload CSV (BiH or Club)
+                ↑ Upload CSV
               </button>
               <button
                 onClick={downloadBihCsv}
-                className="rounded-md px-3.5 py-2 text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(45,212,191,0.25)]"
-                style={{ background: "rgba(45,212,191,0.18)", border: "1px solid rgba(45,212,191,0.45)", color: TEAL }}
-                title="Download verified Bosnia & Herzegovina adolescent physical activity dataset (PMC8534587, PMC8620439, PMC7761556)"
+                className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all bg-[#171C33] border border-[#262D4D] text-[#CBD5E1] hover:border-[#C084FC] hover:text-[#F8FAFC]"
+                title="Download verified Bosnia & Herzegovina adolescent physical activity dataset"
               >
-                <span>🇧🇦</span>
-                <span>Download Bosnia &amp; Herzegovina Sample CSV</span>
+                Sample CSV
               </button>
               <button
                 onClick={downloadSampleCsv}
-                className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
-                style={{ background: "#0B151E", border: "1px solid #1E3243", color: "#94A3B8" }}
+                className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all bg-[#171C33] border border-[#262D4D] text-[#CBD5E1] hover:border-[#C084FC] hover:text-[#F8FAFC]"
                 title="Download generic club CSV template"
               >
-                ↓ Download Club Template
+                Club Template
               </button>
               <button
                 onClick={() => setShowEvidence(true)}
-                className="rounded-md px-3 py-2 text-xs font-semibold transition-colors"
-                style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.35)", color: AMBER }}
+                className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all bg-[#171C33] border border-[#262D4D] text-[#CBD5E1] hover:border-[#C084FC] hover:text-[#F8FAFC]"
               >
-                ⚑ EU &amp; BiH Evidence
+                Evidence &amp; Sources
               </button>
               {customCohort && (
                 <button
                   onClick={() => { setCustomCohort(null); setUploadWarnings([]); }}
-                  className="rounded-md px-3 py-2 text-xs transition-colors text-[#94A3B8] hover:text-[#F8FAFC]"
+                  className="rounded-lg px-2.5 py-1.5 text-xs transition-colors text-[#64748B] hover:text-[#F8FAFC]"
                 >
-                  ✕ Clear Upload
+                  ✕ Clear
                 </button>
               )}
+
+              {/* Far Right Event Tag */}
+              <div className="flex items-center gap-2 pl-2 border-l border-[#262D4D]">
+                <div className="text-right leading-tight">
+                  <span className="block text-xs font-extrabold tracking-wider text-[#F8FAFC]">SARAJEVO</span>
+                  <span className="block text-[10px] font-mono text-[#64748B]">HACKATHON 2026</span>
+                </div>
+                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wider font-mono bg-[#171C33] border border-[#262D4D] text-[#C084FC]">
+                  ERASMUS+ · TRACK 04
+                </span>
+              </div>
             </div>
           </div>
           {uploadWarnings.length > 0 && (
-            <div className="mt-3 rounded-lg px-4 py-2 text-xs" style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: AMBER }}>
+            <div className="mt-3 rounded-lg px-4 py-2 text-xs" style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: GOLD }}>
               {uploadWarnings.map((w, i) => <p key={i}>{w}</p>)}
             </div>
           )}
@@ -813,30 +815,30 @@ function Dashboard() {
 
         {/* ── Mode Context Banner: Macro Telemetry vs Club Diagnostic Sandbox ── */}
         {mode === "macro" ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#13222F] border border-[#2DD4BF]/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#111526] border border-[#262D4D] shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
             <div className="flex items-center gap-2.5">
               <span className="text-lg">🇧🇦</span>
               <div>
                 <span className="font-bold text-[#F8FAFC]">HOST COUNTRY &amp; EUROPEAN BENCHMARK TELEMETRY: </span>
-                <span className="text-[#94A3B8]">
+                <span className="text-[#CBD5E1]">
                   Displaying verified peer-reviewed Bosnia &amp; Herzegovina adolescent physical activity data (PMC8534587, PMC8620439, PMC7761556) alongside Eurostat (hlth_ehis_pe3i, hlth_ehis_pe2e), Special Eurobarometer 574, and Erasmus+ ICOACHKIDS+. Zero fabricated local club names.
                 </span>
               </div>
             </div>
-            <Badge color="teal">BiH &amp; Eurostat Verified</Badge>
+            <Badge color="violet">BiH &amp; Eurostat Verified</Badge>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#13222F] border border-[#F59E0B]/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs bg-[#111526] border border-[#FBBF24]/40 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
             <div className="flex items-center gap-2.5">
               <span className="text-lg">🧪</span>
               <div>
-                <span className="font-bold text-[#F59E0B]">CLUB DIAGNOSTIC SANDBOX (SYNTHETIC DEMO MODEL — LAW 03 COMPLIANT): </span>
-                <span className="text-[#94A3B8]">
+                <span className="font-bold text-[#FBBF24]">CLUB DIAGNOSTIC SANDBOX (SYNTHETIC DEMO MODEL — LAW 03 COMPLIANT): </span>
+                <span className="text-[#CBD5E1]">
                   Interactive grassroots simulation modeling prime pitch scheduling (18:00–21:00), female coach staffing, dark-shorts kits, and washroom period supplies. Test with synthetic demo clubs or upload your club CSV.
                 </span>
               </div>
             </div>
-            <Badge color="amber">Synthetic Sandbox Model</Badge>
+            <Badge color="gold">Synthetic Sandbox Model</Badge>
           </div>
         )}
 
@@ -845,14 +847,14 @@ function Dashboard() {
           <div
             className="rounded-xl p-4 transition-all duration-300 animate-in fade-in slide-in-from-top-2"
             style={{
-              background: "linear-gradient(135deg, rgba(45,212,191,0.12) 0%, rgba(19,34,47,0.95) 100%)",
-              border: "1px solid rgba(45,212,191,0.45)",
-              boxShadow: "0 0 25px rgba(45,212,191,0.15), 0 8px 30px rgba(0,0,0,0.5)",
+              background: "linear-gradient(135deg, rgba(192,132,252,0.12) 0%, rgba(17,21,38,0.95) 100%)",
+              border: "1px solid rgba(192,132,252,0.45)",
+              boxShadow: "0 0 25px rgba(192,132,252,0.15), 0 8px 30px rgba(0,0,0,0.5)",
             }}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2DD4BF]/25 pb-3 mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#C084FC]/25 pb-3 mb-3">
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2DD4BF] text-[#0B151E] font-black text-xs shadow-[0_0_10px_rgba(45,212,191,0.6)]">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C084FC] text-[#080A12] font-black text-xs shadow-[0_0_10px_rgba(192,132,252,0.6)]">
                   ✓
                 </span>
                 <span className="text-sm font-extrabold text-[#F8FAFC] tracking-tight">
@@ -860,19 +862,19 @@ function Dashboard() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#2DD4BF] font-mono">
+                <span className="text-xs font-bold text-[#34D399] font-mono">
                   +{sim.shareGain}% Active Share Growth | +{sim.retained} Retained Girls | −{sim.hazardDrop} pp Hazard Drop
                 </span>
               </div>
             </div>
 
-            {/* 4-Pill Grid */}
+            {/* 4-Pill Grid with Distinct Accent Borders */}
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
               {/* Pill 1: Sky #38BDF8 */}
               <div
-                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                className="rounded-lg p-3 bg-[#080A12] flex flex-col justify-between"
                 style={{
-                  border: "1px solid #1E3243",
+                  border: "1px solid #262D4D",
                   borderTop: `2px solid ${SKY}`,
                   borderLeft: `2px solid ${SKY}`,
                 }}
@@ -883,15 +885,15 @@ function Dashboard() {
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(56,189,248,0.15)", border: "1px solid rgba(56,189,248,0.35)", color: SKY }}>€0 Cost</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">18:00–20:00 Equal Pitch Allocation</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 37–40% Eurobarometer time/schedule barrier (€0 cost).</p>
+                  <p className="mt-1 text-[11px] text-[#CBD5E1]">Solves 37–40% Eurobarometer time/schedule barrier (€0 cost).</p>
                 </div>
               </div>
 
               {/* Pill 2: Rose #FB7185 */}
               <div
-                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                className="rounded-lg p-3 bg-[#080A12] flex flex-col justify-between"
                 style={{
-                  border: "1px solid #1E3243",
+                  border: "1px solid #262D4D",
                   borderTop: `2px solid ${CORAL}`,
                   borderLeft: `2px solid ${CORAL}`,
                 }}
@@ -902,15 +904,15 @@ function Dashboard() {
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(251,113,133,0.15)", border: "1px solid rgba(251,113,133,0.35)", color: CORAL }}>Near-€0</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">Dark Shorts Policy &amp; Period Supplies</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 78% Women in Sport period/leakage avoidance (Near-€0 cost).</p>
+                  <p className="mt-1 text-[11px] text-[#CBD5E1]">Solves 78% Women in Sport period/leakage avoidance (Near-€0 cost).</p>
                 </div>
               </div>
 
-              {/* Pill 3: Violet #A78BFA */}
+              {/* Pill 3: Violet #C084FC */}
               <div
-                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                className="rounded-lg p-3 bg-[#080A12] flex flex-col justify-between"
                 style={{
-                  border: "1px solid #1E3243",
+                  border: "1px solid #262D4D",
                   borderTop: `2px solid ${VIOLET}`,
                   borderLeft: `2px solid ${VIOLET}`,
                 }}
@@ -918,39 +920,39 @@ function Dashboard() {
                 <div>
                   <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: VIOLET }}>
                     <span>3. Senior Female Athlete Mentors</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.35)", color: VIOLET }}>Low Cost</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(192,132,252,0.15)", border: "1px solid rgba(192,132,252,0.35)", color: VIOLET }}>Low Cost</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">Senior Athlete Assistant Mentors</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 63% lack of female role models (Low cost).</p>
+                  <p className="mt-1 text-[11px] text-[#CBD5E1]">Solves 63% lack of female role models (Low cost).</p>
                 </div>
               </div>
 
-              {/* Pill 4: Amber #FBBF24 */}
+              {/* Pill 4: Championship Gold #FBBF24 */}
               <div
-                className="rounded-lg p-3 bg-[#0B151E]/90 flex flex-col justify-between"
+                className="rounded-lg p-3 bg-[#080A12] flex flex-col justify-between"
                 style={{
-                  border: "1px solid #1E3243",
-                  borderTop: `2px solid ${AMBER_BRIGHT}`,
-                  borderLeft: `2px solid ${AMBER_BRIGHT}`,
+                  border: "1px solid #262D4D",
+                  borderTop: `2px solid ${GOLD}`,
+                  borderLeft: `2px solid ${GOLD}`,
                 }}
               >
                 <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: AMBER_BRIGHT }}>
+                  <div className="flex items-center justify-between text-[11px] font-bold" style={{ color: GOLD }}>
                     <span>4. 10-Min Injury Warmup Protocol</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.35)", color: AMBER_BRIGHT }}>€0 Cost</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.35)", color: GOLD }}>€0 Cost</span>
                   </div>
                   <p className="mt-1 text-xs font-semibold text-[#F8FAFC]">ACL &amp; Joint Prevention Routine</p>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">Solves 15% Eurobarometer health/injury barrier (€0 cost).</p>
+                  <p className="mt-1 text-[11px] text-[#CBD5E1]">Solves 15% Eurobarometer health/injury barrier (€0 cost).</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-2.5 flex flex-wrap items-center justify-between text-[10px] text-[#94A3B8] italic gap-2">
+            <div className="mt-2.5 flex flex-wrap items-center justify-between text-[10px] text-[#64748B] italic gap-2">
               <span>*Projected growth modeled using barrier-reduction elasticity weights from Eurobarometer 574, Women in Sport (2022), and PMC12330288.</span>
               <button
                 type="button"
                 onClick={resetToBaseline}
-                className="text-[#2DD4BF] hover:underline font-bold not-italic"
+                className="text-[#C084FC] hover:underline font-bold not-italic"
               >
                 ← Return to Raw Baseline
               </button>
@@ -958,13 +960,13 @@ function Dashboard() {
           </div>
         )}
 
-        {/* ── KPI Ribbon ── */}
+        {/* ── Hero KPI Cards ── */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <KpiCard
             title="Female Active Share"
             main={isAfterMode ? `${sim.projectedShare}%` : `${k.femaleActiveShare}%`}
-            mainColor={TEAL}
-            accentColor={isAfterMode ? TEAL : undefined}
+            mainColor={VIOLET}
+            accentColor={isAfterMode ? VIOLET : undefined}
             sub={
               isAfterMode
                 ? `${sim.currentActive} → ${sim.projectedActive} active players (+${sim.retained} newly engaged)`
@@ -975,13 +977,13 @@ function Dashboard() {
                 ? `+${sim.shareGain}% Growth (+${sim.retained} Active Girls)`
                 : "50% Parity Target"
             }
-            badgeColor="teal"
+            badgeColor={isAfterMode ? "emerald" : "violet"}
             bottom={
               <div className="space-y-1">
-                <ProgressBar value={isAfterMode ? sim.projectedShare : k.femaleActiveShare} color={TEAL} />
-                <div className="flex justify-between text-xs text-[#94A3B8]">
+                <ProgressBar value={isAfterMode ? sim.projectedShare : k.femaleActiveShare} color={VIOLET} />
+                <div className="flex justify-between text-xs text-[#64748B]">
                   <span>{isAfterMode ? `${k.femaleActiveShare}% baseline` : "toward 50% parity"}</span>
-                  {isAfterMode && <span className="text-[#2DD4BF] font-bold">Target Reached</span>}
+                  {isAfterMode && <span className="text-[#34D399] font-bold">Target Reached</span>}
                 </div>
               </div>
             }
@@ -989,8 +991,8 @@ function Dashboard() {
           <KpiCard
             title="Adolescent Dropout Cliff (U14→U18)"
             main={isAfterMode ? `${sim.projected}%` : `${k.dropoutCliff}%`}
-            mainColor={isAfterMode ? AMBER_BRIGHT : AMBER}
-            accentColor={isAfterMode ? AMBER_BRIGHT : "amber"}
+            mainColor={GOLD}
+            accentColor={GOLD}
             sub={
               isAfterMode
                 ? `Hazard drops from ${k.dropoutCliff}% to ${sim.projected}% (−${sim.hazardDrop} pp reduction)`
@@ -999,15 +1001,15 @@ function Dashboard() {
             badge={
               isAfterMode
                 ? `−${sim.hazardDrop} pp Hazard Drop`
-                : "ICOACHKIDS+ 52% teen dropout window"
+                : "ICOACHKIDS+: 52% teen dropout window"
             }
-            badgeColor="amber"
+            badgeColor={isAfterMode ? "emerald" : "gold"}
           />
           <KpiCard
             title="Prime-Time Pitch Share (18:00–21:00)"
             main={isAfterMode ? `${postPrimeSlot}%` : `${k.primeSlotAvg}%`}
-            mainColor={isAfterMode ? SKY : TEAL}
-            accentColor={isAfterMode ? SKY : "teal"}
+            mainColor={isAfterMode ? SKY : VIOLET}
+            accentColor={isAfterMode ? SKY : undefined}
             sub={
               isAfterMode
                 ? "50/50 evening allocation active (18:00–20:00 priority for girls' squads)"
@@ -1020,20 +1022,20 @@ function Dashboard() {
                   ? `${((100 - k.primeSlotAvg) / Math.max(1, k.primeSlotAvg)).toFixed(1)}x Male Skew`
                   : "Near Parity")
             }
-            badgeColor={isAfterMode ? "sky" : (k.primeSlotAvg < 40 ? "coral" : "teal")}
+            badgeColor={isAfterMode ? "sky" : (k.primeSlotAvg < 40 ? "coral" : "violet")}
           />
           <KpiCard
             title="Female Coaching & Kit Score"
             main={isAfterMode ? `${postComposite}%` : `${k.femaleCoachAvg}%`}
-            mainColor={isAfterMode ? VIOLET : (k.pubertySupportAvg < 50 ? CORAL : TEAL)}
-            accentColor={isAfterMode ? VIOLET : (k.pubertySupportAvg < 50 ? "coral" : "teal")}
+            mainColor={VIOLET}
+            accentColor={isAfterMode ? VIOLET : undefined}
             sub={
               isAfterMode
                 ? `${baseComposite}% → ${postComposite}% (45% female coaches, 100% dark kit & period packs)`
                 : `Female coaching ${k.femaleCoachAvg}%. Puberty Support Score: ${k.pubertySupportAvg}/100`
             }
             badge={isAfterMode ? `Kit & Coaching Parity (${postComposite}%)` : (k.pubertySupportAvg < 50 ? "Kit & Mentorship Gap" : "On Track")}
-            badgeColor={isAfterMode ? "violet" : (k.pubertySupportAvg < 50 ? "coral" : "teal")}
+            badgeColor={isAfterMode ? "emerald" : (k.pubertySupportAvg < 50 ? "coral" : "violet")}
           />
         </div>
 
@@ -1046,51 +1048,51 @@ function Dashboard() {
 
               {/* Left Sub-Column (3 of 9 cols) */}
               <div className="space-y-5 lg:col-span-3">
-                <Card title="Weekly Prime-Slot Share" accent="teal">
+                <Card title="Weekly Prime-Slot Share" accent="violet">
                   <Donut
                     data={[
-                      { v: isAfterMode ? sim.projectedShare : k.femaleActiveShare, c: TEAL, glow: true },
-                      { v: isAfterMode ? +(100 - sim.projectedShare).toFixed(1) : k.maleActiveShare, c: CORAL },
+                      { v: isAfterMode ? sim.projectedShare : k.femaleActiveShare, c: VIOLET, glow: true },
+                      { v: isAfterMode ? +(100 - sim.projectedShare).toFixed(1) : k.maleActiveShare, c: GOLD },
                     ]}
                     center={
                       <>
                         <span className="kpi text-3xl font-extrabold text-[#F8FAFC]">
                           {isAfterMode ? `${sim.projectedShare}%` : `${k.femaleActiveShare}%`}
                         </span>
-                        <span className="text-xs font-semibold text-[#94A3B8]">
+                        <span className="text-xs font-semibold text-[#CBD5E1]">
                           {isAfterMode ? "Female (Target)" : "Female"}
                         </span>
                       </>
                     }
                   />
                   <div className="mt-2 flex items-center justify-between text-xs">
-                    <Badge color="teal">{isAfterMode ? "50/50 Parity Reached" : "Target: 50/50"}</Badge>
-                    <span className="text-[#94A3B8]">Prime slots 18:00–21:00</span>
+                    <Badge color={isAfterMode ? "emerald" : "violet"}>{isAfterMode ? "50/50 Parity Reached" : "Target: 50/50"}</Badge>
+                    <span className="text-[#64748B]">Prime 18:00–21:00</span>
                   </div>
                 </Card>
 
-                <Card title="Teen Retention Hazard (U14–U18)" accent={isAfterMode ? "teal" : "coral"}>
+                <Card title="Teen Retention Hazard (U14–U18)" accent={isAfterMode ? "emerald" : "coral"}>
                   <Donut
                     data={[
-                      { v: isAfterMode ? sim.projected : k.dropoutCliff, c: isAfterMode ? TEAL : CORAL },
-                      { v: isAfterMode ? +(100 - sim.projected).toFixed(1) : 100 - k.dropoutCliff, c: "#1E3243" },
+                      { v: isAfterMode ? sim.projected : k.dropoutCliff, c: isAfterMode ? EMERALD : CORAL },
+                      { v: isAfterMode ? +(100 - sim.projected).toFixed(1) : 100 - k.dropoutCliff, c: "#171C33" },
                     ]}
                     center={
                       <>
                         <span className="kpi text-3xl font-extrabold text-[#F8FAFC]">
                           {isAfterMode ? `${sim.projected}%` : `${k.dropoutCliff}%`}
                         </span>
-                        <span className="text-xs font-semibold" style={{ color: isAfterMode ? TEAL : CORAL }}>
+                        <span className="text-xs font-semibold" style={{ color: isAfterMode ? EMERALD : CORAL }}>
                           {isAfterMode ? "Projected Hazard" : "Dropout Risk"}
                         </span>
                       </>
                     }
                   />
                   <div className="mt-2">
-                    <Badge color={isAfterMode ? "teal" : "coral"}>
+                    <Badge color={isAfterMode ? "emerald" : "coral"}>
                       {isAfterMode ? `−${sim.hazardDrop} pp Hazard Reduction` : "⚠ Hazard cohort: Ages 14–18"}
                     </Badge>
-                    <p className="mt-2 text-xs text-[#94A3B8]">
+                    <p className="mt-2 text-xs text-[#64748B]">
                       ICOACHKIDS+: 52% of all EU youth sport dropouts occur at ages 14–18. 70% of dropped-out girls still consider themselves "sporty."
                     </p>
                   </div>
@@ -1099,19 +1101,19 @@ function Dashboard() {
 
               {/* Centre Sub-Column (6 of 9 cols) */}
               <div className="space-y-5 lg:col-span-6">
-                <Card title="Active Retention Curve — Female vs. Male by Cohort" accent="teal">
+                <Card title="Active Retention Curve — Female vs. Male by Cohort" accent="violet">
                   <div className="relative h-64">
                     <RunnerWatermark />
                     <ResponsiveContainer className="relative z-10">
                       <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
                         <defs>
                           <linearGradient id="femaleGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={TEAL} stopOpacity={0.38} />
-                            <stop offset="100%" stopColor={TEAL} stopOpacity={0.02} />
+                            <stop offset="0%" stopColor={VIOLET} stopOpacity={0.35} />
+                            <stop offset="100%" stopColor={VIOLET} stopOpacity={0.02} />
                           </linearGradient>
                           <linearGradient id="maleGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={CORAL} stopOpacity={0.28} />
-                            <stop offset="100%" stopColor={CORAL} stopOpacity={0.02} />
+                            <stop offset="0%" stopColor={GOLD} stopOpacity={0.28} />
+                            <stop offset="100%" stopColor={GOLD} stopOpacity={0.02} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid {...CHART_GRID} vertical={false} />
@@ -1119,11 +1121,11 @@ function Dashboard() {
                         <YAxis unit="%" domain={[0, 100]} tick={CHART_TICK_Y} axisLine={false} tickLine={false} />
                         <Tooltip {...TIP_STYLE} />
                         <Legend
-                          wrapperStyle={{ color: "#94A3B8", fontSize: 11 }}
+                          wrapperStyle={{ color: "#CBD5E1", fontSize: 11 }}
                           formatter={(value) => {
                             if (value === "Female Active — Post-Intervention (%)") {
                               return (
-                                <span style={{ color: TEAL, fontWeight: 700 }}>
+                                <span style={{ color: VIOLET, fontWeight: 700 }}>
                                   ✨ Female Active — Post-Intervention (%) [Solid Parity Lift]
                                 </span>
                               );
@@ -1132,9 +1134,9 @@ function Dashboard() {
                               return <span style={{ color: "#94A3B8", fontStyle: "italic" }}>Female Baseline (%) [Dashed]</span>;
                             }
                             if (value === "Female Active (%)") {
-                              return <span style={{ color: TEAL, fontWeight: 600 }}>Female Active (%)</span>;
+                              return <span style={{ color: VIOLET, fontWeight: 600 }}>Female Active (%)</span>;
                             }
-                            return <span style={{ color: CORAL, fontWeight: 600 }}>Male Active (%)</span>;
+                            return <span style={{ color: GOLD, fontWeight: 600 }}>Male Active (%)</span>;
                           }}
                         />
                         <ReferenceLine
@@ -1154,17 +1156,17 @@ function Dashboard() {
                               fill="none"
                               strokeWidth={2}
                               strokeDasharray="4 4"
-                              opacity={0.5}
+                              opacity={0.45}
                             />
-                            {/* Bright #2DD4BF solid line for Female Active — Post-Intervention (%) */}
+                            {/* Bright #C084FC solid line for Female Active — Post-Intervention (%) */}
                             <Area
                               type="linear"
                               dataKey="projectedFemale"
                               name="Female Active — Post-Intervention (%)"
-                              stroke={TEAL}
+                              stroke={VIOLET}
                               fill="url(#femaleGradient)"
                               strokeWidth={3}
-                              dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 2 }}
+                              dot={{ fill: VIOLET, r: 4, stroke: "#080A12", strokeWidth: 2 }}
                             />
                           </>
                         ) : (
@@ -1173,21 +1175,21 @@ function Dashboard() {
                               type="linear"
                               dataKey="female"
                               name="Female Active (%)"
-                              stroke={TEAL}
+                              stroke={VIOLET}
                               fill="url(#femaleGradient)"
                               strokeWidth={3}
-                              dot={{ fill: TEAL, r: 3 }}
+                              dot={{ fill: VIOLET, r: 3 }}
                             />
                             {(s1 > 0 || s2 > 0 || s3 > 0) && (
                               <Area
                                 type="linear"
                                 dataKey="projectedFemale"
                                 name="Female Active — Post-Intervention (%)"
-                                stroke={TEAL}
+                                stroke={VIOLET}
                                 fill="none"
                                 strokeWidth={2.5}
                                 strokeDasharray="6 4"
-                                dot={{ fill: TEAL, r: 4, stroke: "#0B151E", strokeWidth: 1.5 }}
+                                dot={{ fill: VIOLET, r: 4, stroke: "#080A12", strokeWidth: 1.5 }}
                               />
                             )}
                           </>
@@ -1196,10 +1198,10 @@ function Dashboard() {
                           type="linear"
                           dataKey="male"
                           name="Male Active (%)"
-                          stroke={CORAL}
+                          stroke={GOLD}
                           fill="url(#maleGradient)"
                           strokeWidth={2.5}
-                          dot={{ fill: CORAL, r: 3 }}
+                          dot={{ fill: GOLD, r: 3 }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -1210,12 +1212,12 @@ function Dashboard() {
                   <div className="overflow-x-auto">
                     <table className="kpi w-full border-collapse text-sm">
                       <thead>
-                        <tr className="text-left text-[#94A3B8]">
-                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Cohort</th>
-                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Female Active</th>
-                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Male Active</th>
-                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Retention Gap</th>
-                          <th className="border p-2 text-xs" style={{ borderColor: "#1E3243" }}>Prime Slot Share</th>
+                        <tr className="text-left text-[#64748B]">
+                          <th className="border p-2 text-xs" style={{ borderColor: "#262D4D" }}>Cohort</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#262D4D" }}>Female Active</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#262D4D" }}>Male Active</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#262D4D" }}>Retention Gap</th>
+                          <th className="border p-2 text-xs" style={{ borderColor: "#262D4D" }}>Prime Slot Share</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1233,24 +1235,24 @@ function Dashboard() {
 
                           return (
                             <tr key={a.age} className="transition-colors hover:bg-white/5">
-                              <td className="border p-2 font-semibold text-[#F8FAFC]" style={{ borderColor: "#1E3243" }}>{a.age}</td>
-                              <td className="border p-2 font-bold" style={{ borderColor: "#1E3243", color: TEAL }}>
+                              <td className="border p-2 font-semibold text-[#F8FAFC]" style={{ borderColor: "#262D4D" }}>{a.age}</td>
+                              <td className="border p-2 font-bold" style={{ borderColor: "#262D4D", color: VIOLET }}>
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span>{isAfterMode ? `${fProj}%` : `${fFemale}%`}</span>
                                   {isAfterMode && fGain > 0 && (
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40">
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/40">
                                       +{fGain} pp
                                     </span>
                                   )}
                                 </div>
                               </td>
-                              <td className="border p-2" style={{ borderColor: "#1E3243", color: CORAL }}>{fMale}%</td>
-                              <td className="border p-2 font-semibold" style={{ borderColor: "#1E3243", color: displayGap > 15 ? CORAL : displayGap > 5 ? AMBER : TEAL }}>
+                              <td className="border p-2 font-semibold" style={{ borderColor: "#262D4D", color: GOLD }}>{fMale}%</td>
+                              <td className="border p-2 font-semibold" style={{ borderColor: "#262D4D", color: displayGap > 15 ? CORAL : displayGap > 5 ? GOLD : EMERALD }}>
                                 {isAfterMode ? (
                                   <div className="flex items-center gap-1">
                                     <span>{fPostGap > 0 ? "−" : ""}{fPostGap} pp</span>
                                     {fGain > 0 && (
-                                      <span className="text-[10px] text-[#2DD4BF] font-mono">
+                                      <span className="text-[10px] text-[#34D399] font-mono">
                                         ({fBaseGap > 0 ? "−" : ""}{fBaseGap} → {fPostGap > 0 ? "−" : ""}{fPostGap})
                                       </span>
                                     )}
@@ -1259,7 +1261,7 @@ function Dashboard() {
                                   <span>{fBaseGap > 0 ? "−" : ""}{fBaseGap} pp</span>
                                 )}
                               </td>
-                              <td className="border p-2" style={{ borderColor: "#1E3243", color: fPrime < 40 ? CORAL : "#F8FAFC" }}>
+                              <td className="border p-2" style={{ borderColor: "#262D4D", color: fPrime < 40 ? CORAL : "#F8FAFC" }}>
                                 {isAfterMode && s1 >= 50 ? "50%" : `${fPrime}%`}
                               </td>
                             </tr>
@@ -1276,21 +1278,21 @@ function Dashboard() {
             <div
               className="rounded-xl p-4 space-y-3"
               style={{
-                background: "#13222F",
-                border: "1px solid rgba(45,212,191,0.35)",
-                boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+                background: "#111526",
+                border: "1px solid rgba(192,132,252,0.35)",
+                boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
               }}
             >
-              <div className="flex items-center justify-between border-b border-[#1E3243] pb-2.5">
+              <div className="flex items-center justify-between border-b border-[#262D4D] pb-2.5">
                 <div className="flex items-center gap-2 font-bold text-xs text-[#F8FAFC]">
-                  <span className="text-[#2DD4BF]">📈</span>
+                  <span style={{ color: VIOLET }}>📈</span>
                   <span className="tracking-wide uppercase">EXPECTED POST-INTERVENTION IMPACT (PARITY PROJECTION)</span>
                 </div>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                     sim.retained > 0
-                      ? "bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40"
-                      : "bg-[#1E3243] text-[#94A3B8]"
+                      ? "bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/40"
+                      : "bg-[#171C33] text-[#64748B]"
                   }`}
                 >
                   {sim.retained > 0 ? `+${sim.retained} Retained Girls` : "Baseline (No Levers)"}
@@ -1302,13 +1304,13 @@ function Dashboard() {
                 {/* Metric 1: Female Participation Growth */}
                 <div
                   className="rounded-lg p-3"
-                  style={{ background: "#0B151E", border: "1px solid rgba(45,212,191,0.3)" }}
+                  style={{ background: "#080A12", border: "1px solid rgba(192,132,252,0.35)" }}
                 >
-                  <span className="text-[11px] font-semibold text-[#94A3B8] block">Female Participation Growth</span>
-                  <div className="kpi mt-1 text-lg font-extrabold tabular-nums" style={{ color: TEAL }}>
+                  <span className="text-[11px] font-semibold text-[#64748B] block">Female Participation Growth</span>
+                  <div className="kpi mt-1 text-lg font-extrabold tabular-nums" style={{ color: VIOLET }}>
                     {sim.shareGain > 0 ? `+${Number(sim.shareGain.toFixed(1))}%` : "+0.0%"}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-[#94A3B8]">
+                  <p className="mt-0.5 text-[11px] text-[#CBD5E1]">
                     {Number(sim.currentShare.toFixed(1))}% → {Number(sim.projectedShare.toFixed(1))}% Female Active Share
                   </p>
                 </div>
@@ -1316,13 +1318,13 @@ function Dashboard() {
                 {/* Metric 2: Projected Active Female Athletes */}
                 <div
                   className="rounded-lg p-3"
-                  style={{ background: "#0B151E", border: "1px solid #1E3243" }}
+                  style={{ background: "#080A12", border: "1px solid #262D4D" }}
                 >
-                  <span className="text-[11px] font-semibold text-[#94A3B8] block">Projected Active Female Athletes</span>
+                  <span className="text-[11px] font-semibold text-[#64748B] block">Projected Active Female Athletes</span>
                   <div className="kpi mt-1 text-lg font-extrabold text-[#F8FAFC] tabular-nums">
                     {sim.projectedActive}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-[#94A3B8]">
+                  <p className="mt-0.5 text-[11px] text-[#CBD5E1]">
                     {sim.currentActive} → {sim.projectedActive} (+{sim.retained} retained &amp; newly engaged girls)
                   </p>
                 </div>
@@ -1331,25 +1333,25 @@ function Dashboard() {
                 <div
                   className="rounded-lg p-3"
                   style={{
-                    background: "#0B151E",
-                    border: sim.hazardDrop > 0 ? "1px solid rgba(251,191,36,0.35)" : "1px solid #1E3243",
+                    background: "#080A12",
+                    border: sim.hazardDrop > 0 ? "1px solid rgba(251,191,36,0.35)" : "1px solid #262D4D",
                   }}
                 >
-                  <span className="text-[11px] font-semibold text-[#94A3B8] block">Teen Dropout Hazard Drop</span>
+                  <span className="text-[11px] font-semibold text-[#64748B] block">Teen Dropout Hazard Drop</span>
                   <div
                     className="kpi mt-1 text-lg font-extrabold tabular-nums"
-                    style={{ color: sim.hazardDrop > 0 ? AMBER_BRIGHT : "#94A3B8" }}
+                    style={{ color: sim.hazardDrop > 0 ? GOLD : "#64748B" }}
                   >
                     {sim.hazardDrop > 0 ? `−${Number(sim.hazardDrop.toFixed(1))} pp` : "0.0 pp"}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-[#94A3B8]">
+                  <p className="mt-0.5 text-[11px] text-[#CBD5E1]">
                     {Number(k.dropoutCliff.toFixed(1))}% → {Number(sim.projected.toFixed(1))}% ({sim.hazardDrop > 0 ? `-${Number(sim.hazardDrop.toFixed(1))} pp reduction` : "Baseline hazard"})
                   </p>
                 </div>
               </div>
 
               {/* Transparent methodology disclaimer */}
-              <p className="text-[10px] italic text-[#94A3B8] leading-tight pt-1">
+              <p className="text-[10px] italic text-[#64748B] leading-tight pt-1">
                 Hypothetical Policy Elasticity Model — weighted against Eurobarometer 574 (37% time), Women in Sport (78% period/kit), and PMC12330288 (63% female role-model) barrier elasticities.
               </p>
             </div>
@@ -1365,20 +1367,20 @@ function Dashboard() {
                     <XAxis dataKey="day" tick={CHART_TICK_X} axisLine={false} tickLine={false} />
                     <YAxis unit="h" tick={CHART_TICK_Y} axisLine={false} tickLine={false} />
                     <Tooltip {...TIP_STYLE} />
-                    <Bar dataKey="female" name="Female slots (hrs)" fill={TEAL} radius={[3, 3, 0, 0]} />
-                    <Bar dataKey="male"   name="Male slots (hrs)"   fill={CORAL} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="female" name="Female slots (hrs)" fill={VIOLET} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="male"   name="Male slots (hrs)"   fill={GOLD}   radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
               <p className="kpi mt-3 text-3xl font-extrabold text-[#F8FAFC]">
                 {k.primeMaleSkew}x
               </p>
-              <p className="text-xs text-[#94A3B8]">
+              <p className="text-xs text-[#CBD5E1]">
                 Prime-hour slots skew heavily male (Mon–Fri 18:00–21:00)
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Badge color="teal">Female Coach: {k.femaleCoachAvg}%</Badge>
-                <Badge color="coral">Prime Slot Gap: {100 - k.primeSlotAvg - k.primeSlotAvg}pp</Badge>
+                <Badge color="violet">Female Coach: {k.femaleCoachAvg}%</Badge>
+                <Badge color="gold">Prime Slot Gap: {100 - k.primeSlotAvg - k.primeSlotAvg}pp</Badge>
               </div>
             </Card>
 
@@ -1388,11 +1390,11 @@ function Dashboard() {
                   ? 'POLICY OPTIMIZER — "WHAT IF?" MACRO PARITY SIMULATOR'
                   : 'CLUB DIAGNOSTIC SANDBOX — "WHAT IF?" RETENTION SIMULATOR'
               }
-              accent="amber"
+              accent="gold"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2 border-b border-[#1E3243] pb-2.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+                <div className="flex items-center justify-between gap-2 border-b border-[#262D4D] pb-2.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
                     Intervention Levers
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -1401,8 +1403,8 @@ function Dashboard() {
                       onClick={resetToBaseline}
                       className={`rounded px-2 py-0.5 text-[10px] font-semibold transition-all border ${
                         !isAfterMode
-                          ? "border-white/20 bg-[#1E3243] text-[#F8FAFC]"
-                          : "border-[#1E3243] bg-[#0B151E] text-[#94A3B8] hover:text-[#F8FAFC]"
+                          ? "border-white/20 bg-[#171C33] text-[#F8FAFC]"
+                          : "border-[#262D4D] bg-[#080A12] text-[#64748B] hover:text-[#F8FAFC]"
                       }`}
                       title="Reset all levers to baseline (0%)"
                     >
@@ -1413,8 +1415,8 @@ function Dashboard() {
                       onClick={applyAfterTarget}
                       className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all border ${
                         isAfterMode
-                          ? "border-[#2DD4BF] bg-[#2DD4BF] text-[#0B151E] shadow-[0_0_12px_rgba(45,212,191,0.5)]"
-                          : "border-[#2DD4BF]/40 bg-[#2DD4BF]/15 text-[#2DD4BF] hover:bg-[#2DD4BF]/25 shadow-[0_0_10px_rgba(45,212,191,0.2)]"
+                          ? "border-[#C084FC] bg-[#C084FC] text-[#080A12] shadow-[0_0_12px_rgba(192,132,252,0.5)]"
+                          : "border-[#C084FC]/40 bg-[#C084FC]/15 text-[#C084FC] hover:bg-[#C084FC]/25 shadow-[0_0_10px_rgba(192,132,252,0.2)]"
                       }`}
                       title="Apply 90-day target parity (Prime 50%, Coach 45%, Kit 100%)"
                     >
@@ -1431,7 +1433,7 @@ function Dashboard() {
                   }
                   value={s1}
                   onChange={(v) => { setS1(v); if (v > 0) setIsAfterMode(true); }}
-                  accentColor={TEAL}
+                  accentColor={VIOLET}
                 />
                 <ControlledTelemetrySlider
                   label={
@@ -1441,7 +1443,7 @@ function Dashboard() {
                   }
                   value={s2}
                   onChange={(v) => { setS2(v); if (v > 0) setIsAfterMode(true); }}
-                  accentColor={TEAL}
+                  accentColor={VIOLET}
                 />
                 <ControlledTelemetrySlider
                   label={
@@ -1451,10 +1453,10 @@ function Dashboard() {
                   }
                   value={s3}
                   onChange={(v) => { setS3(v); if (v > 0) setIsAfterMode(true); }}
-                  accentColor={TEAL}
+                  accentColor={VIOLET}
                 />
 
-                <div className="rounded-lg p-2.5 bg-[#0B151E] border border-[#1E3243] text-[11px] text-[#94A3B8]">
+                <div className="rounded-lg p-2.5 bg-[#080A12] border border-[#262D4D] text-[11px] text-[#CBD5E1]">
                   <span className="font-semibold text-[#F8FAFC]">⚡ Live Parity Engine: </span>
                   Adjust sliders to project female active retention, prime slot equity, and club growth live across the telemetry bar on the left.
                 </div>
@@ -1463,7 +1465,7 @@ function Dashboard() {
                   <button
                     type="button"
                     onClick={() => { setMode("sandbox"); setView("demo-football"); }}
-                    className="w-full text-center py-2 px-3 rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 text-[#F59E0B] text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                    className="w-full text-center py-2 px-3 rounded-lg border border-[#FBBF24]/30 bg-[#FBBF24]/10 hover:bg-[#FBBF24]/20 text-[#FBBF24] text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
                   >
                     <span>🧪 Switch to Club Diagnostic Sandbox (Law 03) →</span>
                   </button>
@@ -1477,32 +1479,32 @@ function Dashboard() {
         <section
           className="card-lift rounded-xl p-5 md:p-6"
           style={{
-            background: "#13222F",
-            border: "1px solid #1E3243",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
+            background: "#111526",
+            border: "1px solid #262D4D",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)",
           }}
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1E3243] pb-4 mb-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#262D4D] pb-4 mb-5">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-extrabold tracking-tight text-[#F8FAFC]">
                   SPORT FORMAT SKEW
                 </span>
-                <span className="text-sm font-semibold text-[#94A3B8]">
+                <span className="text-sm font-semibold text-[#64748B]">
                   — Male-Dominated Clubs vs. Female-Led Activities
                 </span>
               </div>
-              <p className="mt-1 text-xs text-[#94A3B8]">
+              <p className="mt-1 text-xs text-[#CBD5E1]">
                 Verified empirical data from Women in Sport (2022) &amp; Eurostat (hlth_ehis_pe3i)
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-[#FB7185]/10 border border-[#FB7185]/30 text-[#FB7185]">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FB7185]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#FBBF24]">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#FBBF24]" />
                 Boys Baseline
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-[#2DD4BF]/10 border border-[#2DD4BF]/30 text-[#2DD4BF]">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#2DD4BF]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-[#C084FC]/10 border border-[#C084FC]/30 text-[#C084FC]">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#C084FC]" />
                 Girls Participation
               </span>
             </div>
@@ -1513,20 +1515,20 @@ function Dashboard() {
             <div
               className="rounded-xl p-4 md:p-5 flex flex-col justify-between"
               style={{
-                background: "#0B151E",
-                border: "1px solid rgba(251,113,133,0.3)",
+                background: "#080A12",
+                border: "1px solid rgba(251,191,36,0.3)",
               }}
             >
               <div>
-                <div className="flex items-center justify-between border-b border-[#1E3243] pb-3 mb-4">
+                <div className="flex items-center justify-between border-b border-[#262D4D] pb-3 mb-4">
                   <div>
                     <h3 className="text-sm font-extrabold text-[#F8FAFC] flex items-center gap-2">
-                      <span className="text-[#FB7185]">▼</span>
+                      <span className="text-[#FBBF24]">▼</span>
                       <span>Male-Dominated Organized Arenas</span>
                     </h3>
-                    <p className="text-[11px] text-[#94A3B8]">External team clubs &amp; facility-dependent sports</p>
+                    <p className="text-[11px] text-[#64748B]">External team clubs &amp; facility-dependent sports</p>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FB7185]/15 text-[#FB7185] border border-[#FB7185]/30">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FBBF24]/15 text-[#FBBF24] border border-[#FBBF24]/30">
                     −13 to −17 pp Deficit
                   </span>
                 </div>
@@ -1536,30 +1538,30 @@ function Dashboard() {
                     <div key={item.arena} className="space-y-1.5">
                       <div className="flex items-baseline justify-between text-xs">
                         <span className="font-semibold text-[#F8FAFC]">{item.arena}</span>
-                        <span className="font-bold text-[#FB7185] font-mono text-[11px]">{item.gapLabel}</span>
+                        <span className="font-bold text-[#FBBF24] font-mono text-[11px]">{item.gapLabel}</span>
                       </div>
                       <div className="space-y-1">
                         {/* Boys Bar */}
                         <div className="flex items-center gap-2 text-[11px]">
-                          <span className="w-10 text-[#94A3B8]">Boys:</span>
-                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                          <span className="w-10 text-[#64748B]">Boys:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#171C33] overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-700"
-                              style={{ width: `${item.malePct}%`, background: CORAL }}
+                              style={{ width: `${item.malePct}%`, background: GOLD }}
                             />
                           </div>
-                          <span className="w-10 text-right font-mono font-bold text-[#FB7185]">{item.malePct}%</span>
+                          <span className="w-10 text-right font-mono font-bold text-[#FBBF24]">{item.malePct}%</span>
                         </div>
                         {/* Girls Bar */}
                         <div className="flex items-center gap-2 text-[11px]">
-                          <span className="w-10 text-[#94A3B8]">Girls:</span>
-                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                          <span className="w-10 text-[#64748B]">Girls:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#171C33] overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-700"
-                              style={{ width: `${item.femalePct}%`, background: TEAL }}
+                              style={{ width: `${item.femalePct}%`, background: VIOLET }}
                             />
                           </div>
-                          <span className="w-10 text-right font-mono font-bold text-[#2DD4BF]">{item.femalePct}%</span>
+                          <span className="w-10 text-right font-mono font-bold text-[#C084FC]">{item.femalePct}%</span>
                         </div>
                       </div>
                       <p className="text-[10px] text-[#64748B] italic">Source: {item.source}</p>
@@ -1573,20 +1575,20 @@ function Dashboard() {
             <div
               className="rounded-xl p-4 md:p-5 flex flex-col justify-between"
               style={{
-                background: "#0B151E",
-                border: "1px solid rgba(45,212,191,0.3)",
+                background: "#080A12",
+                border: "1px solid rgba(192,132,252,0.3)",
               }}
             >
               <div>
-                <div className="flex items-center justify-between border-b border-[#1E3243] pb-3 mb-4">
+                <div className="flex items-center justify-between border-b border-[#262D4D] pb-3 mb-4">
                   <div>
                     <h3 className="text-sm font-extrabold text-[#F8FAFC] flex items-center gap-2">
-                      <span className="text-[#2DD4BF]">▲</span>
+                      <span className="text-[#C084FC]">▲</span>
                       <span>Female-Led &amp; Parity Arenas</span>
                     </h3>
-                    <p className="text-[11px] text-[#94A3B8]">Self-paced, individual &amp; school physical education</p>
+                    <p className="text-[11px] text-[#64748B]">Self-paced, individual &amp; school physical education</p>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#2DD4BF]/15 text-[#2DD4BF] border border-[#2DD4BF]/30">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#C084FC]/15 text-[#C084FC] border border-[#C084FC]/30">
                     +2 to +10 pp Parity Lead
                   </span>
                 </div>
@@ -1596,30 +1598,30 @@ function Dashboard() {
                     <div key={item.arena} className="space-y-1.5">
                       <div className="flex items-baseline justify-between text-xs">
                         <span className="font-semibold text-[#F8FAFC]">{item.arena}</span>
-                        <span className="font-bold text-[#2DD4BF] font-mono text-[11px]">{item.gapLabel}</span>
+                        <span className="font-bold text-[#C084FC] font-mono text-[11px]">{item.gapLabel}</span>
                       </div>
                       <div className="space-y-1">
                         {/* Girls Bar */}
                         <div className="flex items-center gap-2 text-[11px]">
-                          <span className="w-10 text-[#94A3B8]">Girls:</span>
-                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                          <span className="w-10 text-[#64748B]">Girls:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#171C33] overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-700"
-                              style={{ width: `${item.femalePct}%`, background: TEAL }}
+                              style={{ width: `${item.femalePct}%`, background: VIOLET }}
                             />
                           </div>
-                          <span className="w-10 text-right font-mono font-bold text-[#2DD4BF]">{item.femalePct}%</span>
+                          <span className="w-10 text-right font-mono font-bold text-[#C084FC]">{item.femalePct}%</span>
                         </div>
                         {/* Boys Bar */}
                         <div className="flex items-center gap-2 text-[11px]">
-                          <span className="w-10 text-[#94A3B8]">Boys:</span>
-                          <div className="h-2 flex-1 rounded-full bg-[#1E3243] overflow-hidden">
+                          <span className="w-10 text-[#64748B]">Boys:</span>
+                          <div className="h-2 flex-1 rounded-full bg-[#171C33] overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-700"
-                              style={{ width: `${item.malePct}%`, background: CORAL }}
+                              style={{ width: `${item.malePct}%`, background: GOLD }}
                             />
                           </div>
-                          <span className="w-10 text-right font-mono font-bold text-[#FB7185]">{item.malePct}%</span>
+                          <span className="w-10 text-right font-mono font-bold text-[#FBBF24]">{item.malePct}%</span>
                         </div>
                       </div>
                       <p className="text-[10px] text-[#64748B] italic">Source: {item.source}</p>
@@ -1634,20 +1636,20 @@ function Dashboard() {
           <div
             className="mt-5 rounded-lg p-4 text-xs"
             style={{
-              background: "rgba(45,212,191,0.08)",
-              border: "1px solid rgba(45,212,191,0.35)",
+              background: "rgba(192,132,252,0.08)",
+              border: "1px solid rgba(192,132,252,0.35)",
             }}
           >
             <div className="flex items-start gap-3">
               <span className="text-lg leading-none" role="img" aria-label="insight">💡</span>
               <div className="space-y-1">
-                <span className="font-bold text-[#2DD4BF] text-xs uppercase tracking-wide">
+                <span className="font-bold text-[#C084FC] text-xs uppercase tracking-wide">
                   Core Analytical Insight:
                 </span>
                 <p className="text-xs text-[#F8FAFC] font-medium leading-relaxed italic">
                   &ldquo;{SPORT_FORMAT_ANALYTICAL_INSIGHT}&rdquo;
                 </p>
-                <p className="text-[11px] text-[#94A3B8] pt-1">
+                <p className="text-[11px] text-[#CBD5E1] pt-1">
                   When physical activity is self-paced or structured safely in schools, adolescent girls maintain equal or greater engagement. The cliff occurs specifically within traditional club environments where pitch access, coaching demographics, and kit culture remain heavily skewed.
                 </p>
               </div>
@@ -1661,13 +1663,13 @@ function Dashboard() {
             <div>
               <h2 className="text-xl font-extrabold text-[#F8FAFC]">
                 {mode === "macro" ? "THE MISSING ATHLETES " : "THE MISSING PLAYERS "}
-                <span className="font-normal text-[#94A3B8]">
+                <span className="font-normal text-[#64748B]">
                   {mode === "macro"
                     ? "— Verified EU Evidence & 90-Day Policy Roadmap"
                     : "— Root-Cause Diagnostics & 90-Day Action Plan"}
                 </span>
               </h2>
-              <p className="mt-1 text-xs text-[#94A3B8]">
+              <p className="mt-1 text-xs text-[#CBD5E1]">
                 {mode === "macro"
                   ? `Verified Macro Geography: ${displayLabel}`
                   : `Club Diagnostic Telemetry: ${displayLabel}`}
@@ -1676,7 +1678,7 @@ function Dashboard() {
             <button
               onClick={runAnalysis}
               disabled={loading}
-              className="rounded-md px-5 py-2.5 text-sm font-bold transition-all disabled:opacity-60 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#0B151E] shadow-[0_0_20px_rgba(45,212,191,0.35)]"
+              className="rounded-lg px-5 py-2.5 text-sm font-bold transition-all disabled:opacity-60 bg-[#C084FC] hover:bg-[#A855F7] text-[#080A12] shadow-[0_0_20px_rgba(192,132,252,0.4)]"
             >
               {loading
                 ? "Analysing…"
@@ -1698,7 +1700,7 @@ function Dashboard() {
             />
             <RootCauseCard
               icon="🕐"
-              color="amber"
+              color="gold"
               title="Scheduling & Safe Transit Barrier"
               stat={`Prime-slot female share: ${k.primeSlotAvg}% (target ≥ 50%). Girls pushed to 20:30–22:00 slots.`}
               source="Eurobarometer 574 (2026): 40% of women cite lack of time / incompatible scheduling as the #1 barrier. Late slots raise safety concerns and reduce parental consent for younger girls."
@@ -1707,7 +1709,7 @@ function Dashboard() {
             />
             <RootCauseCard
               icon="🏅"
-              color="teal"
+              color="violet"
               title="Coaching Mentorship & Socioeconomic Gap"
               stat={`Female coaches: ${k.femaleCoachAvg}%. Fee subsidy for girls: ${k.feeSubsidyAvg}%.`}
               source="Eurostat (hlth_ehis_pe3i): 18pp sport-participation gap between top and bottom income quintiles. 63% of dropped-out girls lack a female coach or role model (PMC12330288)."
@@ -1716,45 +1718,21 @@ function Dashboard() {
             />
           </div>
         </section>
-
-        {/* ── Compliance Footer ── */}
-        <footer
-          className="rounded-xl px-5 py-4"
-          style={{
-            background: "#13222F",
-            border: "1px solid #1E3243",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.07)",
-          }}
-        >
-          <div className="flex flex-wrap gap-3 text-xs">
-            <span className="rounded-full px-4 py-2" style={{ background: "#0B151E", border: "1px solid #1E3243", color: "#94A3B8" }}>
-              <span className="font-bold" style={{ color: TEAL }}>LAW 03 COMPLIANT:</span>{" "}
-              Zero-PII Architecture · Anonymized Club Telemetry &amp; Official EU Aggregates (Eurostat / Eurobarometer / PMC12330288)
-            </span>
-            <span className="rounded-full px-4 py-2" style={{ background: "#0B151E", border: "1px solid #1E3243", color: "#94A3B8" }}>
-              <span className="font-bold" style={{ color: TEAL }}>LAW 05 COMPLIANT:</span>{" "}
-              AI-Assisted Engineering Disclosure — Built with Lovable, Claude Sonnet 4.6 (Antigravity + taste-skill), and Google Gemini
-            </span>
-            <span className="rounded-full px-4 py-2" style={{ background: "#0B151E", border: "1px solid #1E3243", color: "#94A3B8" }}>
-              <span className="font-bold" style={{ color: AMBER }}>SARAJEVO HACKATHON 2026</span> · TRACK 04: WOMEN IN SPORT
-            </span>
-          </div>
-        </footer>
       </div>
 
-      {/* ── EU & BiH Evidence Modal ── */}
+      {/* ── EU & BiH Evidence Modal (Includes Law 03 and Law 05 compliance disclosures) ── */}
       <Modal open={showEvidence} onClose={() => setShowEvidence(false)} title="Evidence Base & Verified Methodology" wide>
         <div className="space-y-5">
-          {/* Methodological Note Callout per brief */}
+          {/* Methodological Note Callout */}
           <div
             className="rounded-lg p-3.5 text-xs"
             style={{
-              background: "rgba(45,212,191,0.08)",
-              border: "1px solid rgba(45,212,191,0.35)",
+              background: "rgba(192,132,252,0.08)",
+              border: "1px solid rgba(192,132,252,0.35)",
               color: "#F8FAFC",
             }}
           >
-            <div className="flex items-center gap-2 mb-1.5 font-bold text-sm" style={{ color: TEAL }}>
+            <div className="flex items-center gap-2 mb-1.5 font-bold text-sm" style={{ color: VIOLET }}>
               <span>🇧🇦</span>
               <span>Methodological Note — Host Country (Bosnia &amp; Herzegovina):</span>
             </div>
@@ -1763,36 +1741,51 @@ function Dashboard() {
             </p>
           </div>
 
-          <p className="text-xs" style={{ color: "#94A3B8" }}>
+          {/* Law 03 and Law 05 Clean Architectural Disclosures */}
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <div className="rounded-lg p-3 bg-[#080A12] border border-[#262D4D] text-xs">
+              <span className="font-bold text-[#34D399] block mb-1">LAW 03 ZERO-PII ARCHITECTURE:</span>
+              <p className="text-[11px] text-[#CBD5E1]">
+                Zero player PII ingested. Cohort aggregations (U12–Uni19+) and anonymized schedule telemetry guarantee strict GDPR and competition privacy.
+              </p>
+            </div>
+            <div className="rounded-lg p-3 bg-[#080A12] border border-[#262D4D] text-xs">
+              <span className="font-bold text-[#C084FC] block mb-1">LAW 05 AI-ASSISTED ENGINEERING:</span>
+              <p className="text-[11px] text-[#CBD5E1]">
+                Engineered for Erasmus+ Track 04 with Google Gemini AI policy generation and deterministic telemetry fallbacks.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-[#CBD5E1]">
             All benchmarks below are clickable, peer-reviewed European and host-country research sources. Every KPI on this dashboard is anchored in these verified findings:
           </p>
           {BENCHMARK_EVIDENCE_REGISTRY.map((e) => (
             <div
               key={e.id}
-              className="rounded-lg p-4"
-              style={{ background: "#0B151E", border: "1px solid #1E3243" }}
+              className="rounded-lg p-4 bg-[#080A12] border border-[#262D4D]"
             >
               <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#94A3B8]">{e.country}</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#64748B]">{e.country}</span>
                   <h4 className="font-bold text-[#F8FAFC] text-sm">{e.title}</h4>
                 </div>
-                <Badge color="teal">{e.stat}</Badge>
+                <Badge color="violet">{e.stat}</Badge>
               </div>
-              <p className="text-xs text-[#94A3B8]">{e.finding}</p>
+              <p className="text-xs text-[#CBD5E1]">{e.finding}</p>
               <a
                 href={e.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 inline-block text-xs underline underline-offset-2 transition-opacity hover:opacity-80"
-                style={{ color: TEAL }}
+                style={{ color: VIOLET }}
               >
                 {e.url}
               </a>
             </div>
           ))}
-          <div className="rounded-lg p-3 text-xs" style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#F8FAFC" }}>
-            <span className="font-bold" style={{ color: AMBER }}>Calculation Formulae:</span>{" "}
+          <div className="rounded-lg p-3 text-xs bg-[#FBBF24]/10 border border-[#FBBF24]/30 text-[#F8FAFC]">
+            <span className="font-bold" style={{ color: GOLD }}>Calculation Formulae:</span>{" "}
             Female Active Share = active at season end ÷ registered at season start (per gender/cohort). Dropout Cliff = (U14 active girls − U18 active girls) ÷ U14 registered girls. What-If elasticities are modeled on Eurobarometer 574 (time barrier: 40%), PMC12330288 (period: 78%), and ICOACHKIDS+ (coach gap: 63%).
           </div>
         </div>
@@ -1801,13 +1794,13 @@ function Dashboard() {
       {/* ── 90-Day Plan Modal ── */}
       <Modal open={showAiPlan} onClose={() => setShowAiPlan(false)} title={plan.title} wide>
         {loading ? (
-          <div className="flex items-center gap-3 py-10 text-sm text-[#94A3B8]">
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: `${TEAL} transparent ${TEAL} ${TEAL}` }} />
-            Gemini AI is reading your club's figures…
+          <div className="flex items-center gap-3 py-10 text-sm text-[#CBD5E1]">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: `${VIOLET} transparent ${VIOLET} ${VIOLET}` }} />
+            Gemini AI is reading your figures…
           </div>
         ) : (
           <>
-            <p className="mb-5 text-xs text-[#94A3B8]">
+            <p className="mb-5 text-xs text-[#CBD5E1]">
               {planSource === "gemini"
                 ? "✨ Generated by Google Gemini (gemini-2.5-flash) using only the verified telemetry figures and root causes shown on this dashboard."
                 : "⚡ Deterministic rule-based engine (<10ms offline fallback) — showing instant evidence-based action plan from your telemetry."}
@@ -1816,10 +1809,9 @@ function Dashboard() {
               {plan.cards.map((c) => (
                 <div
                   key={c.title}
-                  className="rounded-lg p-4"
-                  style={{ background: "#0B151E", border: "1px solid #1E3243" }}
+                  className="rounded-lg p-4 bg-[#080A12] border border-[#262D4D]"
                 >
-                  <h4 className="mb-3 font-bold" style={{ color: TEAL }}>{c.title}</h4>
+                  <h4 className="mb-3 font-bold" style={{ color: VIOLET }}>{c.title}</h4>
                   <ul className="list-disc space-y-1.5 pl-5 text-sm text-[#F8FAFC]">
                     {c.actions.map((a, i) => <li key={i}>{a}</li>)}
                   </ul>
@@ -1827,8 +1819,7 @@ function Dashboard() {
                     {c.kpis.map((x) => (
                       <span
                         key={x.metric}
-                        className="kpi rounded-full px-2.5 py-0.5 text-xs"
-                        style={{ background: "rgba(45,212,191,0.12)", border: "1px solid rgba(45,212,191,0.3)", color: TEAL }}
+                        className="kpi rounded-full px-2.5 py-0.5 text-xs bg-[#C084FC]/15 border border-[#C084FC]/35 text-[#C084FC]"
                       >
                         <span className="font-bold">{x.metric}:</span> {x.target}
                       </span>

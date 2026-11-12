@@ -1,0 +1,29 @@
+/*
+ * SHE COUNTS: Obsidian-Indigo, Electric Orchid-Violet & Championship Gold Theme
+ */
+@import "./styles.css";
+
+:root {
+  /* Backgrounds & Surfaces */
+  --bg-canvas: #080A12;
+  --bg-card: #111526;
+  --bg-elevated: #171C33;
+  --border-subtle: #262D4D;
+
+  /* Semantic Telemetry Accents */
+  --accent-female: #C084FC;
+  --accent-female-hover: #A855F7;
+  --accent-female-glow: rgba(192, 132, 252, 0.35);
+
+  --accent-gold: #FBBF24;
+  --accent-gold-glow: rgba(251, 191, 36, 0.28);
+
+  --status-positive: #34D399;
+  --status-warning: #F59E0B;
+  --status-danger: #FB7185;
+
+  /* Typography */
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+}
