@@ -661,11 +661,11 @@ function Dashboard() {
                   }`}
                 >
                   <span className={`inline-block h-1.5 w-1.5 rounded-full ${mode === "macro" ? "bg-[#080A12]" : "bg-[#C084FC]"}`} />
-                  <span className="font-bold text-[11px] font-mono opacity-80">BA</span>
-                  <span>BiH Host Country &amp; Eurostat Verified Benchmarks</span>
+                  <span className="font-bold text-[10px] font-mono opacity-80">BA</span>
+                  <span>BiH &amp; Eurostat Benchmarks</span>
                   <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded font-mono font-bold ${
                     mode === "macro" ? "bg-black/10 text-[#080A12]" : "bg-white/5 text-[#C084FC]"
-                  }`}>Real Macro Data</span>
+                  }`}>Macro Data</span>
                 </button>
                 <button
                   type="button"
@@ -677,63 +677,61 @@ function Dashboard() {
                   }`}
                 >
                   <span className={`inline-block h-1.5 w-1.5 rounded-full ${mode === "sandbox" ? "bg-[#080A12]" : "bg-[#FBBF24]"}`} />
-                  <span>🧪 Club Diagnostic Sandbox (Synthetic Demo Model — Law 03)</span>
+                  <span>🧪 Club Diagnostic Sandbox</span>
                   <span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded font-mono font-bold ${
                     mode === "sandbox" ? "bg-black/10 text-[#080A12]" : "bg-white/5 text-[#FBBF24]"
-                  }`}>Simulation Mode</span>
+                  }`}>Simulation</span>
                 </button>
               </div>
             </div>
 
-            {/* Right: Simulation State (Before vs. After) & Top-Right Sarajevo Event Tag */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] hidden sm:inline mr-1">SIMULATION STATE:</span>
-                <div className="flex items-center rounded-full bg-[#171C33] border border-[#262D4D] p-1">
-                  <button
-                    type="button"
-                    onClick={resetToBaseline}
-                    className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                      !isAfterMode
-                        ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
-                        : "text-[#CBD5E1] hover:text-[#F8FAFC]"
-                    }`}
-                    aria-pressed={!isAfterMode}
-                  >
-                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${!isAfterMode ? "bg-[#080A12]" : "bg-[#64748B]"}`} />
-                    <span>Before: Baseline</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={applyAfterTarget}
-                    className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                      isAfterMode
-                        ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
-                        : "text-[#CBD5E1] hover:text-[#F8FAFC]"
-                    }`}
-                    aria-pressed={isAfterMode}
-                  >
-                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${isAfterMode ? "bg-[#C084FC]" : "bg-[#64748B]"}`} />
-                    <span>After: 90-Day Target</span>
-                    <span className={`rounded px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-mono font-bold ${
-                      isAfterMode ? "bg-[#C084FC]/25 text-[#080A12]" : "bg-white/5 text-[#C084FC]"
-                    }`}>
-                      +Parity
-                    </span>
-                  </button>
-                </div>
+            {/* Middle: Simulation State (Before vs. After) */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] hidden sm:inline mr-1">SIMULATION STATE:</span>
+              <div className="flex items-center rounded-full bg-[#171C33] border border-[#262D4D] p-1">
+                <button
+                  type="button"
+                  onClick={resetToBaseline}
+                  className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    !isAfterMode
+                      ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
+                      : "text-[#CBD5E1] hover:text-[#F8FAFC]"
+                  }`}
+                  aria-pressed={!isAfterMode}
+                >
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${!isAfterMode ? "bg-[#080A12]" : "bg-[#64748B]"}`} />
+                  <span>Before: Baseline</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={applyAfterTarget}
+                  className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    isAfterMode
+                      ? "bg-[#F8FAFC] text-[#080A12] shadow-sm font-bold"
+                      : "text-[#CBD5E1] hover:text-[#F8FAFC]"
+                  }`}
+                  aria-pressed={isAfterMode}
+                >
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${isAfterMode ? "bg-[#C084FC]" : "bg-[#64748B]"}`} />
+                  <span>After: 90-Day Target</span>
+                  <span className={`rounded px-1.5 py-0.2 text-[9px] uppercase tracking-wider font-mono font-bold ${
+                    isAfterMode ? "bg-[#C084FC]/25 text-[#080A12]" : "bg-white/5 text-[#C084FC]"
+                  }`}>
+                    +Parity
+                  </span>
+                </button>
               </div>
+            </div>
 
-              {/* Sarajevo Hackathon Erasmus+ Pill on the Top Right of the website */}
-              <div className="flex items-center gap-1.5 pl-2.5 border-l border-[#262D4D]">
-                <div className="text-right leading-none">
-                  <span className="block text-[11px] font-extrabold tracking-wider text-[#F8FAFC]">SARAJEVO</span>
-                  <span className="block text-[9px] font-mono text-[#64748B]">HACKATHON 2026</span>
-                </div>
-                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wider font-mono bg-[#171C33] border border-[#262D4D] text-[#C084FC]">
-                  ERASMUS+ · TRACK 04
-                </span>
+            {/* Far Right: Sarajevo Hackathon Event Tag (Always on Top Right) */}
+            <div className="flex items-center gap-2 pl-3 border-l border-[#262D4D]">
+              <div className="text-right leading-none">
+                <span className="block text-[11px] font-extrabold tracking-wider text-[#F8FAFC]">SARAJEVO</span>
+                <span className="block text-[8px] font-mono text-[#64748B]">HACKATHON 2026</span>
               </div>
+              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wider font-mono bg-[#171C33] border border-[#262D4D] text-[#C084FC] whitespace-nowrap">
+                ERASMUS+ · TRACK 04
+              </span>
             </div>
           </div>
 
